@@ -1,0 +1,593 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */; };
+		BF0643F72E3E5910009F04D1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F62E3E5910009F04D1 /* ContentView.swift */; };
+		BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643F82E3E5917009F04D1 /* Assets.xcassets */; };
+		BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */; };
+		BF0644062E3E5918009F04D1 /* Openterface_iOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0644052E3E5918009F04D1 /* Openterface_iOSTests.swift */; };
+		BF0644102E3E5918009F04D1 /* Openterface_iOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF06440F2E3E5918009F04D1 /* Openterface_iOSUITests.swift */; };
+		BF0644122E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BF0644022E3E5917009F04D1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF0643E92E3E5910009F04D1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF0643F02E3E5910009F04D1;
+			remoteInfo = Openterface_iOS;
+		};
+		BF06440C2E3E5918009F04D1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BF0643E92E3E5910009F04D1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BF0643F02E3E5910009F04D1;
+			remoteInfo = Openterface_iOS;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BF0643F12E3E5910009F04D1 /* Openterface_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Openterface_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSApp.swift; sourceTree = "<group>"; };
+		BF0643F62E3E5910009F04D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		BF0643F82E3E5917009F04D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		BF0644012E3E5917009F04D1 /* Openterface_iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Openterface_iOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF0644052E3E5918009F04D1 /* Openterface_iOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSTests.swift; sourceTree = "<group>"; };
+		BF06440B2E3E5918009F04D1 /* Openterface_iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Openterface_iOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF06440F2E3E5918009F04D1 /* Openterface_iOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSUITests.swift; sourceTree = "<group>"; };
+		BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BF0643EE2E3E5910009F04D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0643FE2E3E5917009F04D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0644082E3E5918009F04D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BF0643E82E3E5910009F04D1 = {
+			isa = PBXGroup;
+			children = (
+				BF0643F32E3E5910009F04D1 /* Openterface_iOS */,
+				BF0644042E3E5918009F04D1 /* Openterface_iOSTests */,
+				BF06440E2E3E5918009F04D1 /* Openterface_iOSUITests */,
+				BF0643F22E3E5910009F04D1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BF0643F22E3E5910009F04D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF0643F12E3E5910009F04D1 /* Openterface_iOS.app */,
+				BF0644012E3E5917009F04D1 /* Openterface_iOSTests.xctest */,
+				BF06440B2E3E5918009F04D1 /* Openterface_iOSUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF0643F32E3E5910009F04D1 /* Openterface_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */,
+				BF0643F62E3E5910009F04D1 /* ContentView.swift */,
+				BF0643F82E3E5917009F04D1 /* Assets.xcassets */,
+				BF0643FA2E3E5917009F04D1 /* Preview Content */,
+			);
+			path = Openterface_iOS;
+			sourceTree = "<group>";
+		};
+		BF0643FA2E3E5917009F04D1 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		BF0644042E3E5918009F04D1 /* Openterface_iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				BF0644052E3E5918009F04D1 /* Openterface_iOSTests.swift */,
+			);
+			path = Openterface_iOSTests;
+			sourceTree = "<group>";
+		};
+		BF06440E2E3E5918009F04D1 /* Openterface_iOSUITests */ = {
+			isa = PBXGroup;
+			children = (
+				BF06440F2E3E5918009F04D1 /* Openterface_iOSUITests.swift */,
+				BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */,
+			);
+			path = Openterface_iOSUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BF0643F02E3E5910009F04D1 /* Openterface_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF0644152E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOS" */;
+			buildPhases = (
+				BF0643ED2E3E5910009F04D1 /* Sources */,
+				BF0643EE2E3E5910009F04D1 /* Frameworks */,
+				BF0643EF2E3E5910009F04D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Openterface_iOS;
+			productName = Openterface_iOS;
+			productReference = BF0643F12E3E5910009F04D1 /* Openterface_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BF0644002E3E5917009F04D1 /* Openterface_iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF0644182E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOSTests" */;
+			buildPhases = (
+				BF0643FD2E3E5917009F04D1 /* Sources */,
+				BF0643FE2E3E5917009F04D1 /* Frameworks */,
+				BF0643FF2E3E5917009F04D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF0644032E3E5917009F04D1 /* PBXTargetDependency */,
+			);
+			name = Openterface_iOSTests;
+			productName = Openterface_iOSTests;
+			productReference = BF0644012E3E5917009F04D1 /* Openterface_iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BF06440A2E3E5918009F04D1 /* Openterface_iOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BF06441B2E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOSUITests" */;
+			buildPhases = (
+				BF0644072E3E5918009F04D1 /* Sources */,
+				BF0644082E3E5918009F04D1 /* Frameworks */,
+				BF0644092E3E5918009F04D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BF06440D2E3E5918009F04D1 /* PBXTargetDependency */,
+			);
+			name = Openterface_iOSUITests;
+			productName = Openterface_iOSUITests;
+			productReference = BF06440B2E3E5918009F04D1 /* Openterface_iOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BF0643E92E3E5910009F04D1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					BF0643F02E3E5910009F04D1 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					BF0644002E3E5917009F04D1 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = BF0643F02E3E5910009F04D1;
+					};
+					BF06440A2E3E5918009F04D1 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = BF0643F02E3E5910009F04D1;
+					};
+				};
+			};
+			buildConfigurationList = BF0643EC2E3E5910009F04D1 /* Build configuration list for PBXProject "Openterface_iOS" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BF0643E82E3E5910009F04D1;
+			productRefGroup = BF0643F22E3E5910009F04D1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BF0643F02E3E5910009F04D1 /* Openterface_iOS */,
+				BF0644002E3E5917009F04D1 /* Openterface_iOSTests */,
+				BF06440A2E3E5918009F04D1 /* Openterface_iOSUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BF0643EF2E3E5910009F04D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */,
+				BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0643FF2E3E5917009F04D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0644092E3E5918009F04D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BF0643ED2E3E5910009F04D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0643F72E3E5910009F04D1 /* ContentView.swift in Sources */,
+				BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0643FD2E3E5917009F04D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0644062E3E5918009F04D1 /* Openterface_iOSTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BF0644072E3E5918009F04D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0644102E3E5918009F04D1 /* Openterface_iOSUITests.swift in Sources */,
+				BF0644122E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BF0644032E3E5917009F04D1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF0643F02E3E5910009F04D1 /* Openterface_iOS */;
+			targetProxy = BF0644022E3E5917009F04D1 /* PBXContainerItemProxy */;
+		};
+		BF06440D2E3E5918009F04D1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BF0643F02E3E5910009F04D1 /* Openterface_iOS */;
+			targetProxy = BF06440C2E3E5918009F04D1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BF0644132E3E5918009F04D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BF0644142E3E5918009F04D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BF0644162E3E5918009F04D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Openterface_iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BF0644172E3E5918009F04D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Openterface_iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BF0644192E3E5918009F04D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Openterface_iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Openterface_iOS";
+			};
+			name = Debug;
+		};
+		BF06441A2E3E5918009F04D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Openterface_iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Openterface_iOS";
+			};
+			name = Release;
+		};
+		BF06441C2E3E5918009F04D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Openterface_iOS;
+			};
+			name = Debug;
+		};
+		BF06441D2E3E5918009F04D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "txa.Openterface-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Openterface_iOS;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BF0643EC2E3E5910009F04D1 /* Build configuration list for PBXProject "Openterface_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF0644132E3E5918009F04D1 /* Debug */,
+				BF0644142E3E5918009F04D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF0644152E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF0644162E3E5918009F04D1 /* Debug */,
+				BF0644172E3E5918009F04D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF0644182E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF0644192E3E5918009F04D1 /* Debug */,
+				BF06441A2E3E5918009F04D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BF06441B2E3E5918009F04D1 /* Build configuration list for PBXNativeTarget "Openterface_iOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF06441C2E3E5918009F04D1 /* Debug */,
+				BF06441D2E3E5918009F04D1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BF0643E92E3E5910009F04D1 /* Project object */;
+}
