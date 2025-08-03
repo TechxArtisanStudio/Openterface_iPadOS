@@ -18,6 +18,7 @@ final class KeyboardInputManager: ObservableObject {
     // MARK: - Dependencies
     private let connectionManager: any ConnectionProtocol
     private var compositeKeyManager: CompositeKeyInputManager?
+    private var isExternalKeyboard: Bool = false
     
     // MARK: - Constants
     private let keyboardCodes: [String: UInt8] = [
@@ -88,6 +89,11 @@ final class KeyboardInputManager: ObservableObject {
         self.compositeKeyManager = manager
     }
     
+    func setExternalKeyboardMode(_ enabled: Bool) {
+        self.isExternalKeyboard = enabled
+        print("🎮 External keyboard mode: \(enabled ? "enabled" : "disabled")")
+    }
+    
     // MARK: - Mode Management
     func switchMode(to mode: KeyboardMode) {
         currentMode = mode
@@ -112,7 +118,11 @@ extension KeyboardInputManager: KeyboardInputProtocol {
         
         // Handle modifier keys
         if modifierMasks.keys.contains(key) {
-            handleModifierToggle(key)
+            if isExternalKeyboard {
+                handleModifierPress(key)
+            } else {
+                handleModifierToggle(key)
+            }
             return
         }
         
@@ -132,8 +142,11 @@ extension KeyboardInputManager: KeyboardInputProtocol {
             return
         }
         
+        // Add to pressed keys set
+        pressedKeys.insert(keyAlias)
+        
         var modifierByte: UInt8 = 0x00
-        let keyCodes: [UInt8] = [keyCode, 0x00, 0x00, 0x00, 0x00, 0x00]
+        var keyCodes: [UInt8] = []
         
         // Apply active modifiers
         for modifier in activeModifiers {
@@ -150,19 +163,20 @@ extension KeyboardInputManager: KeyboardInputProtocol {
             }
         }
         
+        // Build key codes array with all currently pressed non-modifier keys
+        for pressedKey in pressedKeys {
+            if let code = keyboardCodes[pressedKey], keyCodes.count < 6 {
+                keyCodes.append(code)
+            }
+        }
+        
+        // Pad key codes array to 6 elements
+        while keyCodes.count < 6 {
+            keyCodes.append(0x00)
+        }
+        
         // Send key press
         sendKeyboardData(modifier: modifierByte, keyCodes: keyCodes)
-        
-        // Send key release after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            var releaseModifierByte: UInt8 = 0x00
-            for modifier in self.activeModifiers {
-                if let modifierMask = self.modifierMasks[modifier] {
-                    releaseModifierByte |= modifierMask
-                }
-            }
-            self.sendKeyboardData(modifier: releaseModifierByte, keyCodes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-        }
     }
     
     func handleKeyRelease(_ key: String) {
@@ -213,6 +227,40 @@ extension KeyboardInputManager: KeyboardInputProtocol {
         }
         
         sendKeyboardData(modifier: modifierByte, keyCodes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    }
+    
+    func handleModifierPress(_ modifier: String) {
+        if !activeModifiers.contains(modifier) {
+            activeModifiers.insert(modifier)
+            print("🔒 \(modifier) pressed (external)")
+            
+            // Send current modifier state
+            var modifierByte: UInt8 = 0x00
+            for activeModifier in activeModifiers {
+                if let modifierMask = modifierMasks[activeModifier] {
+                    modifierByte |= modifierMask
+                }
+            }
+            
+            sendKeyboardData(modifier: modifierByte, keyCodes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        }
+    }
+    
+    func handleModifierRelease(_ modifier: String) {
+        if activeModifiers.contains(modifier) {
+            activeModifiers.remove(modifier)
+            print("🔓 \(modifier) released (external)")
+            
+            // Send current modifier state
+            var modifierByte: UInt8 = 0x00
+            for activeModifier in activeModifiers {
+                if let modifierMask = modifierMasks[activeModifier] {
+                    modifierByte |= modifierMask
+                }
+            }
+            
+            sendKeyboardData(modifier: modifierByte, keyCodes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        }
     }
     
     func handleKeyCombo(modifiers: [String], key: String) {

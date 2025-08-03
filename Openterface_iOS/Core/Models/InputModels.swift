@@ -72,6 +72,7 @@ enum MouseGestureType {
     case drag
     case scroll
     case longPress
+    case rightClick  // Two-finger tap
 }
 
 /// Input event model

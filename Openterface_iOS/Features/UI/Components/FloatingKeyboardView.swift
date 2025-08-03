@@ -25,25 +25,31 @@ struct FloatingKeyboardView: View {
     
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.4)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    isPresented = false
-                }
-            
-            // Floating keyboard panel
-            VStack(spacing: 0) {
-                // Header with drag handle and controls
-                keyboardHeaderView
-                
-                // Keyboard rows
-                keyboardRowsView
-            }
-            .cornerRadius(16)
-            .shadow(color: .black.opacity(0.3), radius: 15, x: 0, y: 8)
-            .offset(dragOffset)
+            // Floating keyboard panel (no background overlay to allow mouse interaction)
+            keyboardContainer
+                .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+                .offset(dragOffset)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .allowsHitTesting(true) // Allow hit testing for the keyboard itself
+        .background(
+            // Semi-transparent background that doesn't block interactions
+            Color.clear
+                .contentShape(Rectangle())
+                .allowsHitTesting(false) // This allows touches to pass through to the underlying view
+        )
+    }
+    
+    // MARK: - Keyboard Container
+    private var keyboardContainer: some View {
+        VStack(spacing: 0) {
+            // Header with drag handle and controls
+            keyboardHeaderView
+            
+            // Keyboard rows
+            keyboardRowsView
+        }
+        .frame(width: keyboardWidth + 32) // Add padding equivalent (16 points on each side)
     }
     
     // MARK: - Header View
@@ -54,9 +60,14 @@ struct FloatingKeyboardView: View {
                 .font(.caption)
                 .foregroundColor(.gray)
             
-            Text("Virtual Keyboard")
-                .font(.headline)
-                .foregroundColor(.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Virtual Keyboard")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                Text("Mouse still active")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
             
             Spacer()
             
@@ -77,11 +88,14 @@ struct FloatingKeyboardView: View {
                     .foregroundColor(.gray)
             }
         }
-        .frame(width: keyboardWidth)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color.backgroundPrimary)
-        .cornerRadius(8)
+        .background(
+            // Add a more opaque background to make the keyboard clearly visible
+            Color.backgroundPrimary
+                .opacity(0.95)
+                .background(.ultraThinMaterial)
+        )
         .gesture(dragGesture)
     }
     
@@ -106,8 +120,14 @@ struct FloatingKeyboardView: View {
                 }
             }
         }
-        .padding()
-        .background(Color.backgroundSecondary)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background(
+            // Add a more opaque background to make the keyboard clearly visible
+            Color.backgroundSecondary
+                .opacity(0.95)
+                .background(.ultraThinMaterial)
+        )
     }
     
     // MARK: - Computed Properties

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct MainContentView: View {
     @StateObject private var appCoordinator = AppCoordinator()
@@ -98,6 +99,12 @@ struct MainContentView: View {
                 .animation(.spring(response: 0.3), value: appCoordinator.showFloatingKeyboard)
             }
         }
+        .background {
+            // External Bluetooth Keyboard Handler
+            ExternalKeyboardHandlerView(keyboardManager: appCoordinator.keyboardManager)
+                .frame(width: 0, height: 0) // Invisible but functional
+                .allowsHitTesting(false) // Don't interfere with other touch interactions
+        }
     }
 }
 
@@ -114,54 +121,6 @@ struct ControlsView: View {
             if appCoordinator.cameraManager.currentDeviceName != nil {
                 CameraAudioInfoView(appCoordinator: appCoordinator)
             }
-            
-            // Debug button for camera
-            #if DEBUG
-            VStack(spacing: 8) {
-                HStack {
-                    Button("Debug Camera") {
-                        appCoordinator.debugStartCameraSession()
-                    }
-                    .buttonStyle(.bordered)
-                    .font(.caption)
-                    
-                    Button("Print State") {
-                        appCoordinator.printDebugState()
-                    }
-                    .buttonStyle(.bordered)
-                    .font(.caption)
-                }
-                
-                HStack {
-                    Button("Check Auth") {
-                        print("🔍 Manual auth check triggered")
-                        appCoordinator.cameraManager.checkCameraAuthorization()
-                    }
-                    .buttonStyle(.bordered)
-                    .font(.caption)
-                    
-                    Button("Force Refresh") {
-                        print("🔄 Force refresh triggered")
-                        appCoordinator.forceRefreshAuthorization()
-                    }
-                    .buttonStyle(.bordered)
-                    .font(.caption)
-                }
-                
-                // Orientation correction controls
-                VStack(spacing: 4) {
-                    Text("Orientation: \(appCoordinator.cameraManager.orientationCorrectionMode.description)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Button("Fix Orientation") {
-                        appCoordinator.cameraManager.cycleOrientationCorrection()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .font(.caption)
-                }
-            }
-            #endif
         }
         .padding()
         .background(Color.backgroundPrimary)

@@ -16,6 +16,7 @@ struct CameraPreviewView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: CGRect.zero)
         view.backgroundColor = UIColor.black
+        view.clipsToBounds = true  // Ensure sublayers don't extend beyond bounds
         
         print("=== makeUIView called ===")
         print("Initial view frame: \(view.frame)")
@@ -84,50 +85,61 @@ struct CameraPreviewView: UIViewRepresentable {
     
     // MARK: - Setup Methods
     private func setupPreviewLayer(in view: UIView, context: Context) {
-        print("🎬 === setupPreviewLayer called ===")
-        print("View frame: \(view.frame)")
-        print("View bounds: \(view.bounds)")
-        print("View has superview: \(view.superview != nil)")
-        print("Camera manager session available: \(cameraManager.captureSession != nil)")
-        
-        // Remove existing preview layer if any
-        if let existingLayer = context.coordinator.previewLayer {
-            print("🗑️ Removing existing preview layer")
-            existingLayer.removeFromSuperlayer()
-            context.coordinator.previewLayer = nil
-        }
-        
-        guard let previewLayer = cameraManager.getPreviewLayer() else {
-            print("❌ No preview layer available from camera manager")
-            // Show a black background as fallback
-            view.backgroundColor = UIColor.black
-            return
-        }
-        
-        print("✅ Got preview layer from camera manager")
-        print("Preview layer session: \(previewLayer.session != nil)")
-        print("Preview layer session running: \(previewLayer.session?.isRunning ?? false)")
-        
-        previewLayer.frame = view.bounds
-        previewLayer.videoGravity = .resizeAspectFill
-        
-        print("📐 Set preview layer frame to: \(previewLayer.frame)")
-        print("📐 Set video gravity to: \(previewLayer.videoGravity)")
-        
-        // Update orientation
-        updateLayerOrientation(previewLayer)
-        
-        print("🏗️ Adding preview layer to view")
-        view.layer.addSublayer(previewLayer)
-        context.coordinator.previewLayer = previewLayer
-        
-        print("✅ Preview layer setup completed")
-        print("Preview layer frame: \(previewLayer.frame)")
-        print("Preview layer session: \(previewLayer.session != nil)")
-        print("View sublayers count: \(view.layer.sublayers?.count ?? 0)")
-        
-        // Force a layout update
+        // Ensure all UI operations happen on the main thread
         DispatchQueue.main.async {
+            print("🎬 === setupPreviewLayer called ===")
+            print("View frame: \(view.frame)")
+            print("View bounds: \(view.bounds)")
+            print("View has superview: \(view.superview != nil)")
+            print("Camera manager session available: \(self.cameraManager.captureSession != nil)")
+            
+            // Check if we already have a valid preview layer
+            if let existingLayer = context.coordinator.previewLayer,
+               existingLayer.session == self.cameraManager.captureSession,
+               existingLayer.superlayer == view.layer {
+                print("✅ Preview layer already exists and is valid - skipping recreation")
+                // Just update the frame
+                existingLayer.frame = view.bounds
+                return
+            }
+            
+            // Remove existing preview layer if any
+            if let existingLayer = context.coordinator.previewLayer {
+                print("🗑️ Removing existing preview layer")
+                existingLayer.removeFromSuperlayer()
+                context.coordinator.previewLayer = nil
+            }
+            
+            guard let previewLayer = self.cameraManager.getPreviewLayer() else {
+                print("❌ No preview layer available from camera manager")
+                // Show a black background as fallback
+                view.backgroundColor = UIColor.black
+                return
+            }
+            
+            print("✅ Got preview layer from camera manager")
+            print("Preview layer session: \(previewLayer.session != nil)")
+            print("Preview layer session running: \(previewLayer.session?.isRunning ?? false)")
+            
+            previewLayer.frame = view.bounds
+            previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
+            
+            print("📐 Set preview layer frame to: \(previewLayer.frame)")
+            print("📐 Set video gravity to: \(previewLayer.videoGravity)")
+            
+            // Update orientation
+            self.updateLayerOrientation(previewLayer)
+            
+            print("🏗️ Adding preview layer to view")
+            view.layer.addSublayer(previewLayer)
+            context.coordinator.previewLayer = previewLayer
+            
+            print("✅ Preview layer setup completed")
+            print("Preview layer frame: \(previewLayer.frame)")
+            print("Preview layer session: \(previewLayer.session != nil)")
+            print("View sublayers count: \(view.layer.sublayers?.count ?? 0)")
+            
+            // Force a layout update
             view.setNeedsLayout()
             view.layoutIfNeeded()
             print("🔄 Forced view layout update")
@@ -144,9 +156,17 @@ struct CameraPreviewView: UIViewRepresentable {
         
         // Tap gesture for mouse clicks
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        tapGesture.numberOfTapsRequired = 1
+        tapGesture.numberOfTouchesRequired = 1
         view.addGestureRecognizer(tapGesture)
         
-        // Long press for right click
+        // Two-finger tap gesture for right click
+        let twoFingerTapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTwoFingerTap(_:)))
+        twoFingerTapGesture.numberOfTapsRequired = 1
+        twoFingerTapGesture.numberOfTouchesRequired = 2
+        view.addGestureRecognizer(twoFingerTapGesture)
+        
+        // Long press for right click (fallback)
         let longPressGesture = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleLongPress(_:)))
         longPressGesture.minimumPressDuration = 0.5
         view.addGestureRecognizer(longPressGesture)
@@ -280,26 +300,34 @@ extension CameraPreviewView {
         
         // MARK: - Gesture Handlers
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-            let translation = gesture.translation(in: gesture.view)
+            let currentLocation = gesture.location(in: gesture.view)
             
             switch gesture.state {
             case .began:
                 parent.mouseManager.handleDragGesture(
-                    start: gesture.location(in: gesture.view),
-                    current: gesture.location(in: gesture.view),
+                    start: currentLocation,
+                    current: currentLocation,
                     end: nil
                 )
                 
             case .changed:
-                parent.mouseManager.handleMouseMove(delta: translation)
-                gesture.setTranslation(.zero, in: gesture.view)
+                // Move mouse handling to background queue to prevent UI blocking
+                DispatchQueue.global(qos: .userInteractive).async {
+                    self.parent.mouseManager.handleDragGesture(
+                        start: .zero, // Not used during ongoing drag
+                        current: currentLocation,
+                        end: nil
+                    )
+                }
                 
             case .ended, .cancelled:
-                parent.mouseManager.handleDragGesture(
-                    start: .zero,
-                    current: gesture.location(in: gesture.view),
-                    end: gesture.location(in: gesture.view)
-                )
+                DispatchQueue.global(qos: .userInteractive).async {
+                    self.parent.mouseManager.handleDragGesture(
+                        start: .zero,
+                        current: currentLocation,
+                        end: currentLocation
+                    )
+                }
                 
             default:
                 break
@@ -316,6 +344,12 @@ extension CameraPreviewView {
                 let location = gesture.location(in: gesture.view)
                 parent.mouseManager.handleLongPress(at: location)
             }
+        }
+        
+        @objc func handleTwoFingerTap(_ gesture: UITapGestureRecognizer) {
+            let location = gesture.location(in: gesture.view)
+            print("Two finger tap detected at: \(location)")
+            parent.mouseManager.handleRightClick()
         }
         
         deinit {

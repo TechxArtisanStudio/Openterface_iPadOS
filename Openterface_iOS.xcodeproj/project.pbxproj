@@ -31,6 +31,9 @@
 		BF4ED05A2E3F45910045D619 /* BluetoothConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0512E3F45910045D619 /* BluetoothConnectionManager.swift */; };
 		BF4ED0602E3F45B10045D619 /* HIDUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED05D2E3F45B10045D619 /* HIDUtils.swift */; };
 		BF4ED0612E3F45B10045D619 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED05F2E3F45B10045D619 /* Extensions.swift */; };
+		BF4ED0712E3F9B3D0045D619 /* HIDUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */; };
+		BF4ED0722E3F9B3D0045D619 /* ExternalKeyboardHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */; };
+		BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0702E3F9B3C0045D619 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +81,9 @@
 		BF4ED0512E3F45910045D619 /* BluetoothConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothConnectionManager.swift; sourceTree = "<group>"; };
 		BF4ED05D2E3F45B10045D619 /* HIDUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HIDUtils.swift; sourceTree = "<group>"; };
 		BF4ED05F2E3F45B10045D619 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HIDUtils.swift; sourceTree = "<group>"; };
+		BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExternalKeyboardHandler.swift; sourceTree = "<group>"; };
+		BF4ED0702E3F9B3C0045D619 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +134,7 @@
 		BF0643F32E3E5910009F04D1 /* Openterface_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				BF4ED06B2E3F9B3C0045D619 /* Shared */,
 				BF4ED0402E3F45910045D619 /* Features */,
 				BF4ED02F2E3F45680045D619 /* Core */,
 				BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */,
@@ -299,6 +306,32 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		BF4ED06B2E3F9B3C0045D619 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED06C2E3F9B3C0045D619 /* Utils */,
+				BF4ED06F2E3F9B3C0045D619 /* Extensions */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		BF4ED06C2E3F9B3C0045D619 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */,
+				BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BF4ED06F2E3F9B3C0045D619 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0702E3F9B3C0045D619 /* Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -438,6 +471,7 @@
 				BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */,
 				BF4ED03A2E3F45680045D619 /* CameraModels.swift in Sources */,
 				BF4ED0392E3F45680045D619 /* AppCoordinator.swift in Sources */,
+				BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */,
 				BF4ED0582E3F45910045D619 /* CompositeKeyInputManager.swift in Sources */,
 				BF4ED0552E3F45910045D619 /* FloatingKeyboardView.swift in Sources */,
 				BF4ED0562E3F45910045D619 /* MouseInputManager.swift in Sources */,
@@ -448,6 +482,8 @@
 				BF4ED03D2E3F45680045D619 /* CameraProtocol.swift in Sources */,
 				BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */,
 				BF4ED03E2E3F45680045D619 /* ConnectionProtocol.swift in Sources */,
+				BF4ED0712E3F9B3D0045D619 /* HIDUtils.swift in Sources */,
+				BF4ED0722E3F9B3D0045D619 /* ExternalKeyboardHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

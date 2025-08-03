@@ -45,6 +45,9 @@ final class CameraSessionManager: NSObject, ObservableObject {
     private var audioMixerNode: AVAudioMixerNode?
     private var lastToggleTime: Date = Date.distantPast
     
+    // Audio processing
+    private let audioQueue = DispatchQueue(label: "com.openterface.audio", qos: .userInteractive)
+    
     // Simulator detection
     private var isRunningOnSimulator: Bool {
         return TARGET_OS_SIMULATOR != 0
@@ -198,6 +201,58 @@ extension CameraSessionManager: CameraManagementProtocol {
         checkAudioAuthorization()
     }
     
+    /// Debug method to check detailed audio authorization status
+    func debugAudioAuthorization() {
+        print("=== Audio Authorization Debug ===")
+        let status = AVAudioSession.sharedInstance().recordPermission
+        print("Current record permission: \(status)")
+        print("Raw value: \(status.rawValue)")
+        print("Current isAudioAuthorized: \(isAudioAuthorized)")
+        print("Running on simulator: \(isRunningOnSimulator)")
+        
+        // Check audio session status
+        let audioSession = AVAudioSession.sharedInstance()
+        print("Audio session category: \(audioSession.category)")
+        print("Audio session mode: \(audioSession.mode)")
+        print("Audio session options: \(audioSession.categoryOptions)")
+        
+        // Try to get current route
+        let currentRoute = audioSession.currentRoute
+        print("Current audio route: \(currentRoute)")
+        print("Input sources: \(currentRoute.inputs.count)")
+        for input in currentRoute.inputs {
+            print("  - Input: \(input.portName) (\(input.portType))")
+        }
+        print("Output sources: \(currentRoute.outputs.count)")
+        for output in currentRoute.outputs {
+            print("  - Output: \(output.portName) (\(output.portType))")
+        }
+        
+        // Try to activate audio session to see if that makes inputs available
+        do {
+            try audioSession.setActive(true)
+            print("✅ Audio session activation successful")
+            
+            // Check route again after activation
+            let newRoute = audioSession.currentRoute
+            print("After activation - Input sources: \(newRoute.inputs.count)")
+            for input in newRoute.inputs {
+                print("  - Input: \(input.portName) (\(input.portType))")
+            }
+        } catch {
+            print("❌ Audio session activation failed: \(error)")
+        }
+        
+        print("=== End Audio Debug ===")
+    }
+    
+    /// Force refresh audio session and check authorization again
+    func refreshAudioSession() {
+        print("🔄 Refreshing audio session...")
+        setupAudioSession()
+        checkAudioAuthorization()
+    }
+    
     func requestCameraAccess() {
         print("🔍 requestCameraAccess called")
         AVCaptureDevice.requestAccess(for: .video) { granted in
@@ -225,18 +280,135 @@ extension CameraSessionManager: CameraManagementProtocol {
     
     func checkAudioAuthorization() {
         let status = AVAudioSession.sharedInstance().recordPermission
-        DispatchQueue.main.async {
-            self.isAudioAuthorized = (status == .granted)
+        print("🎤 checkAudioAuthorization - raw status: \(status)")
+        print("🎤 checkAudioAuthorization - status description: \(status.rawValue)")
+        print("🎤 checkAudioAuthorization - current isAudioAuthorized: \(isAudioAuthorized)")
+        print("🎤 checkAudioAuthorization - running on simulator: \(isRunningOnSimulator)")
+        
+        // Check all possible values for debugging
+        switch status {
+        case .undetermined:
+            print("🎤 Status is .undetermined - user hasn't been asked for permission")
+        case .denied:
+            print("🎤 Status is .denied - user explicitly denied permission")
+        case .granted:
+            print("🎤 Status is .granted - user granted permission")
+        @unknown default:
+            print("🎤 Status is unknown: \(status)")
+        }
+        
+        // Only check for available inputs if permission is granted
+        var hasInputs = false
+        if status == .granted {
+            // Try to activate the audio session first to ensure inputs are available
+            let audioSession = AVAudioSession.sharedInstance()
+            do {
+                try audioSession.setActive(true)
+                print("🎤 Audio session activated for input check")
+            } catch {
+                print("🎤 Failed to activate audio session: \(error)")
+            }
+            
+            // Now check for available audio inputs
+            let currentRoute = audioSession.currentRoute
+            hasInputs = currentRoute.inputs.count > 0
+            print("🎤 Audio input sources available: \(hasInputs) (count: \(currentRoute.inputs.count))")
+            
+            // Log input details if available
+            for input in currentRoute.inputs {
+                print("  - Input: \(input.portName) (\(input.portType))")
+            }
+        }
+        
+        let wasAuthorized = self.isAudioAuthorized
+        // Only consider audio authorized if permission is granted AND we have input sources
+        let shouldBeAuthorized = (status == .granted) && hasInputs
+        
+        // Update immediately if on main queue, otherwise dispatch to main queue
+        if Thread.isMainThread {
+            self.isAudioAuthorized = shouldBeAuthorized
+            print("🎤 checkAudioAuthorization - updated isAudioAuthorized from \(wasAuthorized) to \(self.isAudioAuthorized) (sync)")
+        } else {
+            DispatchQueue.main.sync {
+                self.isAudioAuthorized = shouldBeAuthorized
+                print("🎤 checkAudioAuthorization - updated isAudioAuthorized from \(wasAuthorized) to \(self.isAudioAuthorized) (async)")
+            }
+        }
+        
+        if status == .granted && hasInputs {
+            print("✅ Audio is authorized and inputs available")
+            
+            // If we have a running session but no audio, restart it to add audio
+            if sessionState == .running && _captureSession != nil {
+                let currentInputCount = _captureSession?.inputs.count ?? 0
+                let hasAudioInput = _captureSession?.inputs.contains { input in
+                    if let deviceInput = input as? AVCaptureDeviceInput {
+                        return deviceInput.device.hasMediaType(.audio)
+                    }
+                    return false
+                } ?? false
+                
+                if !hasAudioInput {
+                    print("🔄 Restarting session to add audio input...")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.stopSession()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                            self.startSession()
+                        }
+                    }
+                } else {
+                    print("ℹ️ Audio input already present in session")
+                }
+            }
+        } else if status == .granted && !hasInputs {
+            print("⚠️ Audio permission granted but no input sources available")
+        } else if status == .undetermined {
+            print("⚠️ Audio permission not determined - need to request permission")
+        } else {
+            print("❌ Audio not authorized - status: \(status)")
+            if isRunningOnSimulator {
+                print("📱 Note: Running on simulator - audio permissions may behave differently")
+            }
         }
     }
     
     func requestAudioAccess() {
+        print("🎤 requestAudioAccess called")
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            print("🎤 requestAudioAccess callback - granted: \(granted)")
             DispatchQueue.main.async {
-                self.isAudioAuthorized = granted
+                let wasAuthorized = self.isAudioAuthorized
+                
                 if granted {
-                    self.setupAudioEngine()
+                    print("✅ Audio permission granted, activating session and checking inputs...")
+                    // Try to activate the audio session to make inputs available
+                    do {
+                        try AVAudioSession.sharedInstance().setActive(true)
+                        print("✅ Audio session activated successfully")
+                    } catch {
+                        print("⚠️ Failed to activate audio session: \(error)")
+                    }
+                    
+                    // Re-check authorization which will now also check for available inputs
+                    self.checkAudioAuthorization()
+                    
+                    // Setup audio engine if we're now authorized
+                    if self.isAudioAuthorized {
+                        self.setupAudioEngine()
+                        // If camera session is already running, restart it to add audio
+                        if self.sessionState.isRunning {
+                            self.stopSession()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                self.startSession()
+                            }
+                        }
+                    }
+                } else {
+                    print("❌ Audio access denied by user")
+                    self.isAudioAuthorized = false
                 }
+                
+                print("🎤 requestAudioAccess - updated isAudioAuthorized from \(wasAuthorized) to \(self.isAudioAuthorized)")
             }
         }
     }
@@ -318,15 +490,29 @@ extension CameraSessionManager: AudioManagementProtocol {
         }
         lastToggleTime = now
         
+        print("🔊 toggleAudioMonitoring called")
+        print("   - isAudioAuthorized: \(isAudioAuthorized)")
+        print("   - current state: \(isAudioMonitoringEnabled)")
+        
+        guard isAudioAuthorized else {
+            print("❌ Audio not authorized, requesting permission...")
+            requestAudioAccess()
+            return
+        }
+        
         isAudioMonitoringEnabled.toggle()
+        print("🔊 Audio monitoring toggled to: \(isAudioMonitoringEnabled)")
         
         if isAudioMonitoringEnabled {
             // Setup audio engine if not already done
             if audioEngine == nil {
+                print("🔧 Setting up audio engine...")
                 setupAudioEngine()
             }
+            print("🎵 Starting audio engine...")
             startAudioEngine()
         } else {
+            print("🛑 Stopping audio engine...")
             stopAudioEngine()
         }
         
@@ -343,7 +529,8 @@ extension CameraSessionManager: AudioManagementProtocol {
             // Ensure audio session is active before starting engine
             try AVAudioSession.sharedInstance().setActive(true)
             try audioEngine.start()
-            print("✅ Audio engine started")
+            
+            print("✅ Audio engine started for monitoring")
         } catch {
             print("❌ Failed to start audio engine: \(error)")
             // Only try to recover if we haven't already tried recently
@@ -357,6 +544,8 @@ extension CameraSessionManager: AudioManagementProtocol {
     }
     
     func stopAudioEngine() {
+        // Remove any installed taps
+        audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine?.stop()
         print("🛑 Audio engine stopped")
     }
@@ -391,8 +580,15 @@ private extension CameraSessionManager {
             try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetooth])
             try audioSession.setPreferredSampleRate(44100.0)
             try audioSession.setPreferredIOBufferDuration(0.02)
-            // Don't activate the session immediately - let it be activated when needed
-            print("✅ Audio session configured (not activated)")
+            
+            // Try to activate the session to make microphone available for discovery
+            do {
+                try audioSession.setActive(true)
+                print("✅ Audio session configured and activated")
+            } catch {
+                print("⚠️ Audio session configured but activation failed: \(error)")
+                print("   This is normal if no audio permission has been granted yet")
+            }
         } catch {
             print("❌ Failed to configure audio session: \(error)")
         }
@@ -406,33 +602,36 @@ private extension CameraSessionManager {
             return
         }
         
+        guard isAudioAuthorized else {
+            print("⚠️ Audio not authorized, skipping audio engine setup")
+            return
+        }
+        
         do {
             audioEngine = AVAudioEngine()
-            audioPlayerNode = AVAudioPlayerNode()
             audioMixerNode = AVAudioMixerNode()
             
             guard let audioEngine = audioEngine,
-                  let audioPlayerNode = audioPlayerNode,
                   let audioMixerNode = audioMixerNode else {
                 print("❌ Failed to create audio components")
                 return
             }
             
-            audioEngine.attach(audioPlayerNode)
             audioEngine.attach(audioMixerNode)
             
-            // Create connections to ensure audio engine has proper input/output setup
+            // Get the input and output nodes
             let inputNode = audioEngine.inputNode
             let outputNode = audioEngine.outputNode
             let format = inputNode.outputFormat(forBus: 0)
             
-            // Connect mixer to output
+            // For simple monitoring, connect input directly to output via mixer
+            audioEngine.connect(inputNode, to: audioMixerNode, format: format)
             audioEngine.connect(audioMixerNode, to: outputNode, format: format)
             
             // Store the format for later use
             audioFormat = format
             
-            print("✅ Audio engine setup completed with proper connections")
+            print("✅ Audio engine setup completed with direct input monitoring")
         } catch {
             print("❌ Failed to setup audio engine: \(error)")
             // Clear references if setup failed
@@ -478,6 +677,9 @@ private extension CameraSessionManager {
             print("  - \(camera.localizedName) (position: \(camera.position.rawValue), type: \(camera.deviceType.rawValue))")
         }
         
+        // Also discover audio devices
+        discoverAudioDevices()
+        
         // Setup capture session immediately when camera is selected and authorized
         if isAuthorized && selectedCamera != nil && _captureSession == nil {
             print("🔧 Setting up capture session for selected camera")
@@ -491,6 +693,26 @@ private extension CameraSessionManager {
                     }
                 }
             }
+        }
+    }
+    
+    func discoverAudioDevices() {
+        let audioDiscoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.external, .builtInMicrophone],
+            mediaType: .audio,
+            position: .unspecified
+        )
+        
+        let audioDevices = audioDiscoverySession.devices
+        print("🎤 Found \(audioDevices.count) audio devices")
+        audioDevices.forEach { audioDevice in
+            print("  - \(audioDevice.localizedName) (audio)")
+        }
+        
+        // Set current audio device name if available
+        if let firstAudioDevice = audioDevices.first {
+            currentAudioDeviceName = firstAudioDevice.localizedName
+            hasNewAudioDeviceDetected = true
         }
     }
     
@@ -546,6 +768,72 @@ private extension CameraSessionManager {
                 return
             }
             
+            // Add audio input if available and authorized
+            if isAudioAuthorized {
+                print("🎤 Audio authorized, attempting to add audio input...")
+                
+                // Try to add audio input from the same device if it supports audio
+                if selectedCamera.hasMediaType(.audio) {
+                    print("🎤 Selected camera supports audio, adding audio input from camera...")
+                    do {
+                        let audioInput = try AVCaptureDeviceInput(device: selectedCamera)
+                        if captureSession.canAddInput(audioInput) {
+                            captureSession.addInput(audioInput)
+                            print("✅ Audio input added from camera device: \(selectedCamera.localizedName)")
+                        } else {
+                            print("❌ Cannot add audio input from camera device")
+                        }
+                    } catch {
+                        print("⚠️ Could not add audio input from camera device: \(error)")
+                    }
+                } else {
+                    print("🎤 Camera doesn't support audio, looking for separate audio device...")
+                    // Try to find a separate audio device
+                    let audioDevices = AVCaptureDevice.DiscoverySession(
+                        deviceTypes: [.external, .builtInMicrophone],
+                        mediaType: .audio,
+                        position: .unspecified
+                    ).devices
+                    
+                    print("🎤 Found \(audioDevices.count) separate audio devices")
+                    for device in audioDevices {
+                        print("  - \(device.localizedName) (\(device.deviceType))")
+                    }
+                    
+                    if let audioDevice = audioDevices.first {
+                        print("🎤 Attempting to add audio input from: \(audioDevice.localizedName)")
+                        do {
+                            let audioInput = try AVCaptureDeviceInput(device: audioDevice)
+                            if captureSession.canAddInput(audioInput) {
+                                captureSession.addInput(audioInput)
+                                currentAudioDeviceName = audioDevice.localizedName
+                                print("✅ Audio input added from separate device: \(audioDevice.localizedName)")
+                            } else {
+                                print("❌ Cannot add audio input from separate device")
+                            }
+                        } catch {
+                            print("⚠️ Could not add audio input from separate device: \(error)")
+                        }
+                    } else {
+                        print("❌ No separate audio devices found")
+                    }
+                }
+                
+                // Add audio output for monitoring
+                print("🎤 Adding audio output for monitoring...")
+                let audioOutput = AVCaptureAudioDataOutput()
+                audioOutput.setSampleBufferDelegate(self, queue: audioQueue)
+                if captureSession.canAddOutput(audioOutput) {
+                    captureSession.addOutput(audioOutput)
+                    self.audioOutput = audioOutput
+                    print("✅ Audio output added successfully with delegate")
+                } else {
+                    print("❌ Cannot add audio output")
+                }
+            } else {
+                print("⚠️ Audio not authorized, skipping audio setup")
+            }
+            
             // Add video output for preview
             let videoOutput = AVCaptureVideoDataOutput()
             videoOutput.setSampleBufferDelegate(nil, queue: nil)
@@ -587,6 +875,9 @@ private extension CameraSessionManager {
             if device.hasMediaType(.video) {
                 self.hasNewCameraDetected = true
                 self.discovereAndSelectCamera()
+            } else if device.hasMediaType(.audio) {
+                self.hasNewAudioDeviceDetected = true
+                self.discoverAudioDevices()
             }
         }
     }
@@ -597,6 +888,8 @@ private extension CameraSessionManager {
         DispatchQueue.main.async {
             if device.hasMediaType(.video) {
                 self.discovereAndSelectCamera()
+            } else if device.hasMediaType(.audio) {
+                self.discoverAudioDevices()
             }
         }
     }
@@ -607,6 +900,26 @@ private extension CameraSessionManager {
         deviceDiscoverySession = nil
         
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+// MARK: - AVCaptureAudioDataOutputSampleBufferDelegate
+extension CameraSessionManager: AVCaptureAudioDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // Only process audio if monitoring is enabled
+        guard isAudioMonitoringEnabled else {
+            return
+        }
+        
+        // Print every 60 buffers to show activity without flooding console
+        var bufferCount = 0
+        bufferCount += 1
+        if bufferCount % 60 == 0 {
+            print("🎵 Processing audio buffer #\(bufferCount)")
+        }
+        
+        // For now, just log that we're receiving audio - actual playback will be handled
+        // by the audio engine's input monitoring
     }
 }
 

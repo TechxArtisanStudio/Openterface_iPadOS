@@ -254,5 +254,15 @@ extension AppCoordinator {
         print("Mouse Select Mode: \(mouseManager.isSelectMode)")
         print("=====================")
     }
+    
+    /// Debug method for audio authorization
+    func debugAudioAuthorization() {
+        cameraManager.debugAudioAuthorization()
+    }
+    
+    /// Refresh audio session
+    func refreshAudioSession() {
+        cameraManager.refreshAudioSession()
+    }
 }
 #endif
