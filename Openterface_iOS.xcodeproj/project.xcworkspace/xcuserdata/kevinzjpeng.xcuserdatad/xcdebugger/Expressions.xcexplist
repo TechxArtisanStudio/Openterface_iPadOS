@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "CameraSessionManager.checkCameraAuthorization():CameraSessionManager.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "status">
+            </PersistentString>
+            <PersistentString
+               value = "self.isAuthorized">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in MainContentView.body.getter:MainContentView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "appCoordinator.cameraManager">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

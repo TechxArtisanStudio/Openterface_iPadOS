@@ -11,7 +11,7 @@ import SwiftUI
 struct Openterface_iOSApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainContentView()
         }
     }
 }

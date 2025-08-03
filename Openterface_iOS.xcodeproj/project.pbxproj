@@ -8,12 +8,29 @@
 
 /* Begin PBXBuildFile section */
 		BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */; };
-		BF0643F72E3E5910009F04D1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F62E3E5910009F04D1 /* ContentView.swift */; };
 		BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643F82E3E5917009F04D1 /* Assets.xcassets */; };
 		BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */; };
 		BF0644062E3E5918009F04D1 /* Openterface_iOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0644052E3E5918009F04D1 /* Openterface_iOSTests.swift */; };
 		BF0644102E3E5918009F04D1 /* Openterface_iOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF06440F2E3E5918009F04D1 /* Openterface_iOSUITests.swift */; };
 		BF0644122E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */; };
+		BF4ED0392E3F45680045D619 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0302E3F45680045D619 /* AppCoordinator.swift */; };
+		BF4ED03A2E3F45680045D619 /* CameraModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0322E3F45680045D619 /* CameraModels.swift */; };
+		BF4ED03B2E3F45680045D619 /* ConnectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0332E3F45680045D619 /* ConnectionModels.swift */; };
+		BF4ED03C2E3F45680045D619 /* InputModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0342E3F45680045D619 /* InputModels.swift */; };
+		BF4ED03D2E3F45680045D619 /* CameraProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0362E3F45680045D619 /* CameraProtocol.swift */; };
+		BF4ED03E2E3F45680045D619 /* ConnectionProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0372E3F45680045D619 /* ConnectionProtocol.swift */; };
+		BF4ED03F2E3F45680045D619 /* InputProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0382E3F45680045D619 /* InputProtocol.swift */; };
+		BF4ED0522E3F45910045D619 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0432E3F45910045D619 /* MainContentView.swift */; };
+		BF4ED0532E3F45910045D619 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0452E3F45910045D619 /* CameraPreviewView.swift */; };
+		BF4ED0542E3F45910045D619 /* BluetoothConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0462E3F45910045D619 /* BluetoothConnectionView.swift */; };
+		BF4ED0552E3F45910045D619 /* FloatingKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0472E3F45910045D619 /* FloatingKeyboardView.swift */; };
+		BF4ED0562E3F45910045D619 /* MouseInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED04A2E3F45910045D619 /* MouseInputManager.swift */; };
+		BF4ED0572E3F45910045D619 /* KeyboardInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED04C2E3F45910045D619 /* KeyboardInputManager.swift */; };
+		BF4ED0582E3F45910045D619 /* CompositeKeyInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED04D2E3F45910045D619 /* CompositeKeyInputManager.swift */; };
+		BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED04F2E3F45910045D619 /* CameraSessionManager.swift */; };
+		BF4ED05A2E3F45910045D619 /* BluetoothConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0512E3F45910045D619 /* BluetoothConnectionManager.swift */; };
+		BF4ED0602E3F45B10045D619 /* HIDUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED05D2E3F45B10045D619 /* HIDUtils.swift */; };
+		BF4ED0612E3F45B10045D619 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED05F2E3F45B10045D619 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +53,6 @@
 /* Begin PBXFileReference section */
 		BF0643F12E3E5910009F04D1 /* Openterface_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Openterface_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSApp.swift; sourceTree = "<group>"; };
-		BF0643F62E3E5910009F04D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BF0643F82E3E5917009F04D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		BF0644012E3E5917009F04D1 /* Openterface_iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Openterface_iOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +60,24 @@
 		BF06440B2E3E5918009F04D1 /* Openterface_iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Openterface_iOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF06440F2E3E5918009F04D1 /* Openterface_iOSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSUITests.swift; sourceTree = "<group>"; };
 		BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		BF4ED0302E3F45680045D619 /* AppCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
+		BF4ED0322E3F45680045D619 /* CameraModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraModels.swift; sourceTree = "<group>"; };
+		BF4ED0332E3F45680045D619 /* ConnectionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionModels.swift; sourceTree = "<group>"; };
+		BF4ED0342E3F45680045D619 /* InputModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputModels.swift; sourceTree = "<group>"; };
+		BF4ED0362E3F45680045D619 /* CameraProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraProtocol.swift; sourceTree = "<group>"; };
+		BF4ED0372E3F45680045D619 /* ConnectionProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionProtocol.swift; sourceTree = "<group>"; };
+		BF4ED0382E3F45680045D619 /* InputProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputProtocol.swift; sourceTree = "<group>"; };
+		BF4ED0432E3F45910045D619 /* MainContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
+		BF4ED0452E3F45910045D619 /* CameraPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
+		BF4ED0462E3F45910045D619 /* BluetoothConnectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothConnectionView.swift; sourceTree = "<group>"; };
+		BF4ED0472E3F45910045D619 /* FloatingKeyboardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingKeyboardView.swift; sourceTree = "<group>"; };
+		BF4ED04A2E3F45910045D619 /* MouseInputManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MouseInputManager.swift; sourceTree = "<group>"; };
+		BF4ED04C2E3F45910045D619 /* KeyboardInputManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyboardInputManager.swift; sourceTree = "<group>"; };
+		BF4ED04D2E3F45910045D619 /* CompositeKeyInputManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompositeKeyInputManager.swift; sourceTree = "<group>"; };
+		BF4ED04F2E3F45910045D619 /* CameraSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraSessionManager.swift; sourceTree = "<group>"; };
+		BF4ED0512E3F45910045D619 /* BluetoothConnectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothConnectionManager.swift; sourceTree = "<group>"; };
+		BF4ED05D2E3F45B10045D619 /* HIDUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HIDUtils.swift; sourceTree = "<group>"; };
+		BF4ED05F2E3F45B10045D619 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,8 +128,9 @@
 		BF0643F32E3E5910009F04D1 /* Openterface_iOS */ = {
 			isa = PBXGroup;
 			children = (
+				BF4ED0402E3F45910045D619 /* Features */,
+				BF4ED02F2E3F45680045D619 /* Core */,
 				BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */,
-				BF0643F62E3E5910009F04D1 /* ContentView.swift */,
 				BF0643F82E3E5917009F04D1 /* Assets.xcassets */,
 				BF0643FA2E3E5917009F04D1 /* Preview Content */,
 			);
@@ -125,6 +160,143 @@
 				BF0644112E3E5918009F04D1 /* Openterface_iOSUITestsLaunchTests.swift */,
 			);
 			path = Openterface_iOSUITests;
+			sourceTree = "<group>";
+		};
+		BF4ED02F2E3F45680045D619 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED05B2E3F45B10045D619 /* Shared */,
+				BF4ED0302E3F45680045D619 /* AppCoordinator.swift */,
+				BF4ED0312E3F45680045D619 /* Models */,
+				BF4ED0352E3F45680045D619 /* Protocols */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		BF4ED0312E3F45680045D619 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0322E3F45680045D619 /* CameraModels.swift */,
+				BF4ED0332E3F45680045D619 /* ConnectionModels.swift */,
+				BF4ED0342E3F45680045D619 /* InputModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BF4ED0352E3F45680045D619 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0362E3F45680045D619 /* CameraProtocol.swift */,
+				BF4ED0372E3F45680045D619 /* ConnectionProtocol.swift */,
+				BF4ED0382E3F45680045D619 /* InputProtocol.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		BF4ED0402E3F45910045D619 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0412E3F45910045D619 /* UI */,
+				BF4ED0482E3F45910045D619 /* Input */,
+				BF4ED04E2E3F45910045D619 /* Camera */,
+				BF4ED0502E3F45910045D619 /* Bluetooth */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		BF4ED0412E3F45910045D619 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0422E3F45910045D619 /* Screens */,
+				BF4ED0442E3F45910045D619 /* Components */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		BF4ED0422E3F45910045D619 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0432E3F45910045D619 /* MainContentView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		BF4ED0442E3F45910045D619 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0452E3F45910045D619 /* CameraPreviewView.swift */,
+				BF4ED0462E3F45910045D619 /* BluetoothConnectionView.swift */,
+				BF4ED0472E3F45910045D619 /* FloatingKeyboardView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		BF4ED0482E3F45910045D619 /* Input */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0492E3F45910045D619 /* Mouse */,
+				BF4ED04B2E3F45910045D619 /* Keyboard */,
+			);
+			path = Input;
+			sourceTree = "<group>";
+		};
+		BF4ED0492E3F45910045D619 /* Mouse */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED04A2E3F45910045D619 /* MouseInputManager.swift */,
+			);
+			path = Mouse;
+			sourceTree = "<group>";
+		};
+		BF4ED04B2E3F45910045D619 /* Keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED04C2E3F45910045D619 /* KeyboardInputManager.swift */,
+				BF4ED04D2E3F45910045D619 /* CompositeKeyInputManager.swift */,
+			);
+			path = Keyboard;
+			sourceTree = "<group>";
+		};
+		BF4ED04E2E3F45910045D619 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED04F2E3F45910045D619 /* CameraSessionManager.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		BF4ED0502E3F45910045D619 /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED0512E3F45910045D619 /* BluetoothConnectionManager.swift */,
+			);
+			path = Bluetooth;
+			sourceTree = "<group>";
+		};
+		BF4ED05B2E3F45B10045D619 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED05C2E3F45B10045D619 /* Utils */,
+				BF4ED05E2E3F45B10045D619 /* Extensions */,
+			);
+			name = Shared;
+			path = Openterface_iOS/Shared;
+			sourceTree = SOURCE_ROOT;
+		};
+		BF4ED05C2E3F45B10045D619 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED05D2E3F45B10045D619 /* HIDUtils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BF4ED05E2E3F45B10045D619 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				BF4ED05F2E3F45B10045D619 /* Extensions.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -257,8 +429,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF0643F72E3E5910009F04D1 /* ContentView.swift in Sources */,
+				BF4ED03F2E3F45680045D619 /* InputProtocol.swift in Sources */,
+				BF4ED0612E3F45B10045D619 /* Extensions.swift in Sources */,
+				BF4ED0602E3F45B10045D619 /* HIDUtils.swift in Sources */,
+				BF4ED0532E3F45910045D619 /* CameraPreviewView.swift in Sources */,
+				BF4ED0572E3F45910045D619 /* KeyboardInputManager.swift in Sources */,
+				BF4ED03B2E3F45680045D619 /* ConnectionModels.swift in Sources */,
+				BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */,
+				BF4ED03A2E3F45680045D619 /* CameraModels.swift in Sources */,
+				BF4ED0392E3F45680045D619 /* AppCoordinator.swift in Sources */,
+				BF4ED0582E3F45910045D619 /* CompositeKeyInputManager.swift in Sources */,
+				BF4ED0552E3F45910045D619 /* FloatingKeyboardView.swift in Sources */,
+				BF4ED0562E3F45910045D619 /* MouseInputManager.swift in Sources */,
+				BF4ED03C2E3F45680045D619 /* InputModels.swift in Sources */,
+				BF4ED0542E3F45910045D619 /* BluetoothConnectionView.swift in Sources */,
+				BF4ED0522E3F45910045D619 /* MainContentView.swift in Sources */,
+				BF4ED05A2E3F45910045D619 /* BluetoothConnectionManager.swift in Sources */,
+				BF4ED03D2E3F45680045D619 /* CameraProtocol.swift in Sources */,
 				BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */,
+				BF4ED03E2E3F45680045D619 /* ConnectionProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,6 +614,10 @@
 				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to connect to Openterface devices and display video feed.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to capture audio from your Openterface device and provide full audio/video preview functionality.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -454,6 +647,10 @@
 				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to connect to Openterface devices and display video feed.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to capture audio from your Openterface device and provide full audio/video preview functionality.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
