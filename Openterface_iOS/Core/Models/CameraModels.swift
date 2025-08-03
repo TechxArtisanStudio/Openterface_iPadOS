@@ -163,3 +163,15 @@ enum CameraSessionState: Equatable {
         }
     }
 }
+
+/// Orientation correction mode for external cameras
+enum OrientationCorrectionMode: String, CaseIterable {
+    case normal = "Normal"
+    case inverted = "Inverted"
+    case rotated180 = "Rotated 180°"
+    case mirroredInverted = "Mirrored + Inverted"
+    
+    var description: String {
+        return self.rawValue
+    }
+}

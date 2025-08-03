@@ -194,8 +194,7 @@ struct CameraPreviewView: UIViewRepresentable {
         if connection.isVideoOrientationSupported {
             let oldOrientation = connection.videoOrientation
             
-            // For external cameras/capture cards, try different orientation corrections
-            // This attempts to fix common issues with flipped video
+            // For external cameras/capture cards, try corrected orientation
             let correctedOrientation = getCorrectedOrientation(for: interfaceOrientation)
             previewLayer.connection?.videoOrientation = correctedOrientation
             
@@ -207,19 +206,47 @@ struct CameraPreviewView: UIViewRepresentable {
     
     /// Get corrected orientation for external cameras that may have flipped video
     private func getCorrectedOrientation(for interfaceOrientation: UIInterfaceOrientation) -> AVCaptureVideoOrientation {
-        // Try inverted orientations first for external cameras/capture cards
-        // If this doesn't work, users can modify this logic
-        switch interfaceOrientation {
-        case .portrait:
-            return .portraitUpsideDown  // Try inverted for upside-down fix
-        case .portraitUpsideDown:
-            return .portrait           // Try inverted for upside-down fix
-        case .landscapeLeft:
-            return .landscapeRight     // Try inverted for left-right flip fix
-        case .landscapeRight:
-            return .landscapeLeft      // Try inverted for left-right flip fix
-        default:
-            return .portraitUpsideDown // Default fallback
+        // Use the camera manager's orientation correction mode if available
+        switch cameraManager.orientationCorrectionMode {
+        case .normal:
+            // Standard orientation mapping
+            switch interfaceOrientation {
+            case .portrait: return .portrait
+            case .portraitUpsideDown: return .portraitUpsideDown
+            case .landscapeLeft: return .landscapeLeft
+            case .landscapeRight: return .landscapeRight
+            default: return .portrait
+            }
+            
+        case .inverted:
+            // Inverted orientation mapping (fixes up/down and left/right flips)
+            switch interfaceOrientation {
+            case .portrait: return .portraitUpsideDown
+            case .portraitUpsideDown: return .portrait
+            case .landscapeLeft: return .landscapeRight
+            case .landscapeRight: return .landscapeLeft
+            default: return .portraitUpsideDown
+            }
+            
+        case .rotated180:
+            // 180° rotation
+            switch interfaceOrientation {
+            case .portrait: return .portraitUpsideDown
+            case .portraitUpsideDown: return .portrait
+            case .landscapeLeft: return .landscapeRight
+            case .landscapeRight: return .landscapeLeft
+            default: return .portraitUpsideDown
+            }
+            
+        case .mirroredInverted:
+            // For now, same as inverted (mirroring handled separately)
+            switch interfaceOrientation {
+            case .portrait: return .portraitUpsideDown
+            case .portraitUpsideDown: return .portrait
+            case .landscapeLeft: return .landscapeRight
+            case .landscapeRight: return .landscapeLeft
+            default: return .portraitUpsideDown
+            }
         }
     }
 }

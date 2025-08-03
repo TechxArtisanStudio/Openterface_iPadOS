@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import UIKit
 
 final class CameraSessionManager: NSObject, ObservableObject {
     // MARK: - Published Properties
@@ -624,5 +625,23 @@ enum CameraError: LocalizedError {
         case .permissionDenied:
             return "Camera permission denied"
         }
+    }
+}
+
+// MARK: - Camera Session Manager Extension for Orientation
+extension CameraSessionManager {
+    func cycleOrientationCorrection() {
+        let allCases = OrientationCorrectionMode.allCases
+        if let currentIndex = allCases.firstIndex(of: orientationCorrectionMode) {
+            let nextIndex = (currentIndex + 1) % allCases.count
+            orientationCorrectionMode = allCases[nextIndex]
+        } else {
+            orientationCorrectionMode = .normal
+        }
+        
+        print("🔄 Orientation correction mode changed to: \(orientationCorrectionMode.description)")
+        
+        // Force refresh the preview layer orientation
+        sessionId = UUID()
     }
 }

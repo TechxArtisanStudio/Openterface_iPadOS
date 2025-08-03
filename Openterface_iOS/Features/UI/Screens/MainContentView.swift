@@ -147,6 +147,19 @@ struct ControlsView: View {
                     .buttonStyle(.bordered)
                     .font(.caption)
                 }
+                
+                // Orientation correction controls
+                VStack(spacing: 4) {
+                    Text("Orientation: \(appCoordinator.cameraManager.orientationCorrectionMode.description)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Button("Fix Orientation") {
+                        appCoordinator.cameraManager.cycleOrientationCorrection()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .font(.caption)
+                }
             }
             #endif
         }
