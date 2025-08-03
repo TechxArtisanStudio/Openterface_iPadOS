@@ -18,64 +18,36 @@ struct CameraPreviewView: UIViewRepresentable {
         view.backgroundColor = UIColor.black
         view.clipsToBounds = true  // Ensure sublayers don't extend beyond bounds
         
-        print("=== makeUIView called ===")
-        print("Initial view frame: \(view.frame)")
-        print("Initial view bounds: \(view.bounds)")
-        print("Camera authorized: \(cameraManager.isAuthorized)")
-        print("Camera session available: \(cameraManager.captureSession != nil)")
-        print("Camera session state: \(cameraManager.sessionState)")
-        
         setupPreviewLayer(in: view, context: context)
         setupGestureRecognizers(for: view, context: context)
         
         // Setup orientation observer through coordinator
         context.coordinator.setupOrientationObserver { [weak view] in
             guard let view = view else { return }
-            print("=== Orientation change detected ===")
             self.updatePreviewOrientation(in: view, context: context)
         }
         
-        print("✅ makeUIView completed, returning view")
         return view
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        print("=== updateUIView called ===")
-        print("UIView frame: \(uiView.frame)")
-        print("UIView bounds: \(uiView.bounds)")
-        print("Camera session state: \(cameraManager.sessionState)")
-        print("Camera session available: \(cameraManager.captureSession != nil)")
-        print("Camera authorized: \(cameraManager.isAuthorized)")
-        print("Selected camera: \(cameraManager.selectedCamera?.localizedName ?? "None")")
-        print("Existing preview layer: \(context.coordinator.previewLayer != nil)")
-        
         // Setup preview layer when session becomes available
         if cameraManager.captureSession != nil && cameraManager.isAuthorized {
-            print("🎬 Conditions met for preview setup - calling setupPreviewLayer")
             setupPreviewLayer(in: uiView, context: context)
-        } else {
-            print("⚠️ Conditions NOT met for preview setup:")
-            print("  - Session available: \(cameraManager.captureSession != nil)")
-            print("  - Authorized: \(cameraManager.isAuthorized)")
         }
         
         // Start session if it's not running and we have everything needed
         if cameraManager.isAuthorized && 
            cameraManager.selectedCamera != nil && 
            cameraManager.sessionState == .stopped {
-            print("🚀 Triggering session start from updateUIView")
             cameraManager.startSession()
         }
         
         // Update the preview layer frame to match the view bounds
         if let previewLayer = context.coordinator.previewLayer {
             DispatchQueue.main.async {
-                let oldFrame = previewLayer.frame
                 previewLayer.frame = uiView.bounds
-                print("📐 Preview layer frame updated from \(oldFrame) to \(previewLayer.frame)")
             }
-        } else {
-            print("⚠️ No preview layer to update frame")
         }
     }
     
@@ -87,17 +59,10 @@ struct CameraPreviewView: UIViewRepresentable {
     private func setupPreviewLayer(in view: UIView, context: Context) {
         // Ensure all UI operations happen on the main thread
         DispatchQueue.main.async {
-            print("🎬 === setupPreviewLayer called ===")
-            print("View frame: \(view.frame)")
-            print("View bounds: \(view.bounds)")
-            print("View has superview: \(view.superview != nil)")
-            print("Camera manager session available: \(self.cameraManager.captureSession != nil)")
-            
             // Check if we already have a valid preview layer
             if let existingLayer = context.coordinator.previewLayer,
                existingLayer.session == self.cameraManager.captureSession,
                existingLayer.superlayer == view.layer {
-                print("✅ Preview layer already exists and is valid - skipping recreation")
                 // Just update the frame
                 existingLayer.frame = view.bounds
                 return
@@ -105,44 +70,28 @@ struct CameraPreviewView: UIViewRepresentable {
             
             // Remove existing preview layer if any
             if let existingLayer = context.coordinator.previewLayer {
-                print("🗑️ Removing existing preview layer")
                 existingLayer.removeFromSuperlayer()
                 context.coordinator.previewLayer = nil
             }
             
             guard let previewLayer = self.cameraManager.getPreviewLayer() else {
-                print("❌ No preview layer available from camera manager")
                 // Show a black background as fallback
                 view.backgroundColor = UIColor.black
                 return
             }
             
-            print("✅ Got preview layer from camera manager")
-            print("Preview layer session: \(previewLayer.session != nil)")
-            print("Preview layer session running: \(previewLayer.session?.isRunning ?? false)")
-            
             previewLayer.frame = view.bounds
             previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
-            
-            print("📐 Set preview layer frame to: \(previewLayer.frame)")
-            print("📐 Set video gravity to: \(previewLayer.videoGravity)")
             
             // Update orientation
             self.updateLayerOrientation(previewLayer)
             
-            print("🏗️ Adding preview layer to view")
             view.layer.addSublayer(previewLayer)
             context.coordinator.previewLayer = previewLayer
-            
-            print("✅ Preview layer setup completed")
-            print("Preview layer frame: \(previewLayer.frame)")
-            print("Preview layer session: \(previewLayer.session != nil)")
-            print("View sublayers count: \(view.layer.sublayers?.count ?? 0)")
             
             // Force a layout update
             view.setNeedsLayout()
             view.layoutIfNeeded()
-            print("🔄 Forced view layout update")
         }
     }
     
@@ -150,8 +99,10 @@ struct CameraPreviewView: UIViewRepresentable {
         // Clear existing gestures
         view.gestureRecognizers?.removeAll()
         
-        // Pan gesture for mouse movement
+        // Pan gesture for mouse movement and two-finger scrolling
         let panGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        panGesture.minimumNumberOfTouches = 1
+        panGesture.maximumNumberOfTouches = 2 // Allow both single and two-finger pans
         view.addGestureRecognizer(panGesture)
         
         // Tap gesture for mouse clicks
@@ -160,7 +111,7 @@ struct CameraPreviewView: UIViewRepresentable {
         tapGesture.numberOfTouchesRequired = 1
         view.addGestureRecognizer(tapGesture)
         
-        // Two-finger tap gesture for right click
+        // Two-finger tap gesture for scrolling
         let twoFingerTapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTwoFingerTap(_:)))
         twoFingerTapGesture.numberOfTapsRequired = 1
         twoFingerTapGesture.numberOfTouchesRequired = 2
@@ -170,8 +121,6 @@ struct CameraPreviewView: UIViewRepresentable {
         let longPressGesture = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleLongPress(_:)))
         longPressGesture.minimumPressDuration = 0.5
         view.addGestureRecognizer(longPressGesture)
-        
-        print("✅ Gesture recognizers setup completed")
     }
     
     private func updatePreviewOrientation(in view: UIView, context: Context) {
@@ -180,47 +129,31 @@ struct CameraPreviewView: UIViewRepresentable {
         DispatchQueue.main.async {
             previewLayer.frame = view.bounds
             self.updateLayerOrientation(previewLayer)
-            print("Preview layer orientation updated: \(previewLayer.frame)")
         }
     }
     
     private func updateLayerOrientation(_ previewLayer: AVCaptureVideoPreviewLayer) {
-        print("🔄 === updateLayerOrientation called ===")
-        
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { 
-            print("❌ No window scene available")
             return 
         }
         
         let interfaceOrientation = windowScene.interfaceOrientation
-        print("Current interface orientation: \(interfaceOrientation.rawValue)")
         
         guard let connection = previewLayer.connection else {
-            print("❌ No connection available on preview layer")
             return
         }
-        
-        print("Connection isVideoOrientationSupported: \(connection.isVideoOrientationSupported)")
-        print("Connection isVideoMirroringSupported: \(connection.isVideoMirroringSupported)")
         
         // Configure mirroring first
         if connection.isVideoMirroringSupported {
             connection.automaticallyAdjustsVideoMirroring = false
             // For external cameras (like capture cards), disable mirroring
             connection.isVideoMirrored = false
-            print("✅ Video mirroring disabled for external camera")
         }
         
         if connection.isVideoOrientationSupported {
-            let oldOrientation = connection.videoOrientation
-            
             // For external cameras/capture cards, try corrected orientation
             let correctedOrientation = getCorrectedOrientation(for: interfaceOrientation)
             previewLayer.connection?.videoOrientation = correctedOrientation
-            
-            print("Video orientation changed from \(oldOrientation.rawValue) to \(correctedOrientation.rawValue) (corrected for external camera)")
-        } else {
-            print("⚠️ Video orientation not supported on this connection")
         }
     }
     
@@ -301,9 +234,21 @@ extension CameraPreviewView {
         // MARK: - Gesture Handlers
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
             let currentLocation = gesture.location(in: gesture.view)
+            let numberOfTouches = gesture.numberOfTouches
             
+            print("🔍 Pan gesture - state: \(gesture.state.rawValue), touches: \(numberOfTouches), location: \(currentLocation)")
+            
+            // Check if this is a two-finger drag (scrolling)
+            if numberOfTouches == 2 {
+                print("🔍 Two-finger pan detected - routing to scroll")
+                handleTwoFingerPan(gesture)
+                return
+            }
+            
+            // Single finger pan - regular mouse movement
             switch gesture.state {
             case .began:
+                print("🔍 Single-finger pan began")
                 parent.mouseManager.handleDragGesture(
                     start: currentLocation,
                     current: currentLocation,
@@ -311,6 +256,7 @@ extension CameraPreviewView {
                 )
                 
             case .changed:
+                print("🔍 Single-finger pan changed")
                 // Move mouse handling to background queue to prevent UI blocking
                 DispatchQueue.global(qos: .userInteractive).async {
                     self.parent.mouseManager.handleDragGesture(
@@ -321,6 +267,7 @@ extension CameraPreviewView {
                 }
                 
             case .ended, .cancelled:
+                print("🔍 Single-finger pan ended/cancelled")
                 DispatchQueue.global(qos: .userInteractive).async {
                     self.parent.mouseManager.handleDragGesture(
                         start: .zero,
@@ -334,22 +281,67 @@ extension CameraPreviewView {
             }
         }
         
+        @objc func handleTwoFingerPan(_ gesture: UIPanGestureRecognizer) {
+            let currentLocation = gesture.location(in: gesture.view)
+            let translation = gesture.translation(in: gesture.view)
+            
+            print("🔍 Two-finger pan - state: \(gesture.state.rawValue), location: \(currentLocation), translation: \(translation)")
+            
+            switch gesture.state {
+            case .began:
+                print("🔍 Two-finger scrolling started")
+                parent.mouseManager.startTwoFingerScrolling()
+                
+            case .changed:
+                print("🔍 Two-finger scrolling changed - translation: \(translation)")
+                // Calculate scroll deltas from translation
+                let deltaX = Int(translation.x)
+                let deltaY = Int(translation.y)
+                
+                // Apply scrolling with sensitivity adjustment
+                let scrollSensitivity = 5 // Adjust this for scroll speed
+                let scrollDeltaX = deltaX / scrollSensitivity
+                let scrollDeltaY = deltaY / scrollSensitivity // Remove inversion here - handleScroll will handle it
+                
+                if abs(scrollDeltaX) > 0 || abs(scrollDeltaY) > 0 {
+                    print("🔍 Sending scroll - deltaX: \(scrollDeltaX), deltaY: \(scrollDeltaY)")
+                    parent.mouseManager.handleScroll(deltaX: scrollDeltaX, deltaY: scrollDeltaY)
+                }
+                
+                // Reset translation to get incremental changes
+                gesture.setTranslation(.zero, in: gesture.view)
+                
+            case .ended, .cancelled:
+                print("🔍 Two-finger scrolling ended")
+                parent.mouseManager.endTwoFingerScrolling()
+                
+            default:
+                break
+            }
+        }
+        
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+            print("🔍 Single tap gesture detected in UI")
             let location = gesture.location(in: gesture.view)
+            print("🔍 Tap location: \(location)")
             parent.mouseManager.handleTap(at: location)
         }
         
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
             if gesture.state == .began {
+                print("🔍 Long press gesture detected in UI")
                 let location = gesture.location(in: gesture.view)
+                print("🔍 Long press location: \(location)")
                 parent.mouseManager.handleLongPress(at: location)
             }
         }
         
         @objc func handleTwoFingerTap(_ gesture: UITapGestureRecognizer) {
+            print("🔍 handleTwoFingerTap gesture detected in UI")
             let location = gesture.location(in: gesture.view)
-            print("Two finger tap detected at: \(location)")
-            parent.mouseManager.handleRightClick()
+            print("🔍 Two-finger tap location: \(location)")
+            // Two-finger tap should trigger scrolling, not right-click
+            parent.mouseManager.handleLongPress(at: location)
         }
         
         deinit {

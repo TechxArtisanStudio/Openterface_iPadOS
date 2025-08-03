@@ -13,6 +13,7 @@ final class MouseInputManager: ObservableObject {
     @Published var currentPosition: CGPoint? = nil
     @Published var previousPosition: CGPoint? = nil
     @Published var isSelectMode: Bool = false // Track drag mode state
+    @Published var isTwoFingerScrolling: Bool = false // Track two-finger scroll state
     
     // MARK: - Private Properties
     private let connectionManager: any ConnectionProtocol
@@ -22,6 +23,7 @@ final class MouseInputManager: ObservableObject {
     // MARK: - Initialization
     init(connectionManager: any ConnectionProtocol) {
         self.connectionManager = connectionManager
+        print("🔍 MouseInputManager initialized")
     }
     
     // MARK: - Drag Event Handlers
@@ -154,32 +156,40 @@ final class MouseInputManager: ObservableObject {
     }
 
     func handleScroll(deltaX: Int, deltaY: Int) {
-        print("Performing scroll action - deltaX: \(deltaX), deltaY: \(deltaY)")
+        print("🔍 handleScroll called with deltaX: \(deltaX), deltaY: \(deltaY)")
+        print("📜 Performing scroll action - deltaX: \(deltaX), deltaY: \(deltaY)")
         
-        // Convert scroll deltas to appropriate wheel values
-        // Positive deltaY means scroll up, negative means scroll down
         // Adjust sensitivity - make scrolling more responsive
         let scrollSensitivity = 3
         let boundedDeltaY = max(-127, min(127, deltaY * scrollSensitivity))
         let boundedDeltaX = max(-127, min(127, deltaX * scrollSensitivity))
         
+        print("🔍 After sensitivity adjustment - boundedDeltaX: \(boundedDeltaX), boundedDeltaY: \(boundedDeltaY)")
+        
         // For vertical scrolling, use wheelMove (deltaY)
         let wheelMove = boundedDeltaY >= 0 ? boundedDeltaY : (0x100 + boundedDeltaY)
+        
+        print("🔍 Wheel move value: \(wheelMove) (0x\(String(wheelMove, radix: 16)))")
         
         // Create scroll packet - no mouse button pressed, no movement, just wheel
         var scrollDataPacket: [UInt8] = [0x57, 0xAB, 0x00, 0x05, 0x05, 0x01, 0x00, 0x00, 0x00, UInt8(wheelMove)]
         let sum = scrollDataPacket.reduce(0 as UInt32, { $0 + UInt32($1) }) & 0xFF
         scrollDataPacket.append(UInt8(sum))
+        
+        print("🔍 Sending scroll packet: \(scrollDataPacket.map { String(format: "0x%02X", $0) }.joined(separator: " "))")
         connectionManager.dataTransmission.sendData(Data(scrollDataPacket))
         
         // If there's horizontal scrolling, send a separate packet (if supported)
         if boundedDeltaX != 0 {
+            print("🔍 Sending horizontal scroll packet")
             // Some systems support horizontal scrolling via different mechanisms
             // This might need adjustment based on the receiving system
             let horizontalWheel = boundedDeltaX >= 0 ? boundedDeltaX : (0x100 + boundedDeltaX)
             var hScrollDataPacket: [UInt8] = [0x57, 0xAB, 0x00, 0x05, 0x05, 0x01, 0x00, UInt8(horizontalWheel), 0x00, 0x00]
             let hSum = hScrollDataPacket.reduce(0 as UInt32, { $0 + UInt32($1) }) & 0xFF
             hScrollDataPacket.append(UInt8(hSum))
+            
+            print("🔍 Horizontal scroll packet: \(hScrollDataPacket.map { String(format: "0x%02X", $0) }.joined(separator: " "))")
             connectionManager.dataTransmission.sendData(Data(hScrollDataPacket))
         }
     }
@@ -188,37 +198,67 @@ final class MouseInputManager: ObservableObject {
 // MARK: - MouseInputProtocol Conformance
 extension MouseInputManager: MouseInputProtocol {
     func handleInput<T>(_ input: T) {
+        print("🔍 MouseInputManager.handleInput called with input type: \(type(of: input))")
+        
         if let gestureData = input as? MouseGesture {
+            print("🔍 MouseGesture detected - type: \(gestureData.gestureType)")
+            print("🔍 Start position: \(gestureData.startPosition)")
+            print("🔍 Current position: \(gestureData.currentPosition)")
+            print("🔍 End position: \(gestureData.endPosition)")
+            
             switch gestureData.gestureType {
             case .tap:
+                print("🔍 Processing tap gesture")
                 handleClick()
             case .doubleTap:
+                print("🔍 Processing double tap gesture")
                 handleDoubleClick()
             case .drag:
+                print("🔍 Processing drag gesture")
                 if let endPosition = gestureData.endPosition {
+                    print("🔍 Drag ended at: \(endPosition)")
                     handleDragEnded()
                 } else {
+                    print("🔍 Drag changed to: \(gestureData.currentPosition)")
                     handleDragChanged(currentPosition: gestureData.currentPosition)
                 }
             case .scroll:
+                print("🔍 Processing scroll gesture")
                 let deltaX = Int(gestureData.currentPosition.x - gestureData.startPosition.x)
                 let deltaY = Int(gestureData.currentPosition.y - gestureData.startPosition.y)
+                print("🔍 Scroll deltas - X: \(deltaX), Y: \(deltaY)")
                 handleScroll(deltaX: deltaX, deltaY: deltaY)
             case .longPress:
-                handleRightClick()
+                print("🔍 Processing long press gesture (two-finger tap)")
+                // Two-finger tap triggers scrolling
+                if let endPosition = gestureData.endPosition {
+                    print("🔍 Long press with end position - calling handleTwoFingerTap")
+                    // If we have end position, calculate scroll delta
+                    handleTwoFingerTap(startPosition: gestureData.startPosition, endPosition: endPosition)
+                } else {
+                    print("🔍 Long press without end position - triggering default scroll")
+                    // Default scroll action
+                    print("Two-finger tap detected - triggering default scroll")
+                    handleScroll(deltaX: 0, deltaY: 10) // Default scroll down
+                }
             case .rightClick:
+                print("🔍 Processing right click gesture")
                 handleRightClick()
             }
+        } else {
+            print("🔍 Input is not a MouseGesture: \(input)")
         }
     }
     
     func handleMouseMove(delta: CGPoint) {
+        print("🔍 handleMouseMove called with delta: \(delta)")
         // Use the new drag changed method for mouse movement
         let currentPos = CGPoint(x: delta.x, y: delta.y)
         handleDragChanged(currentPosition: currentPos)
     }
     
     func handleMouseClick(button: MouseButton, action: MouseAction) {
+        print("🔍 handleMouseClick called - button: \(button), action: \(action)")
         print("🖱️ Mouse \(button) \(action)")
         
         switch (button, action) {
@@ -255,7 +295,8 @@ extension MouseInputManager: MouseInputProtocol {
     }
     
     func handleDragGesture(start: CGPoint, current: CGPoint, end: CGPoint?) {
-        if let end = end {
+        print("🔍 handleDragGesture called - start: \(start), current: \(current), end: \(String(describing: end))")
+        if end != nil {
             handleDragEnded()
         } else {
             handleDragChanged(currentPosition: current)
@@ -263,6 +304,7 @@ extension MouseInputManager: MouseInputProtocol {
     }
     
     func handleScroll(delta: CGPoint) {
+        print("🔍 handleScroll(delta: CGPoint) called with delta: \(delta)")
         let deltaX = Int(delta.x)
         let deltaY = Int(delta.y)
         handleScroll(deltaX: deltaX, deltaY: deltaY)
@@ -273,13 +315,19 @@ extension MouseInputManager: MouseInputProtocol {
 extension MouseInputManager {
     /// Handle tap gesture with timing detection
     func handleTap(at position: CGPoint) {
+        print("🔍 handleTap called at position: \(position)")
         let currentTime = Date().timeIntervalSince1970
+        
+        print("🔍 Current time: \(currentTime), Last tap time: \(lastTapTime)")
+        print("🔍 Time difference: \(currentTime - lastTapTime)")
         
         if currentTime - lastTapTime < doubleTapTimeWindow {
             // Double tap detected
+            print("🔍 Double tap detected")
             handleDoubleClick()
         } else {
             // Single tap
+            print("🔍 Single tap detected")
             handleClick()
         }
         
@@ -288,9 +336,90 @@ extension MouseInputManager {
         }
     }
     
-    /// Handle long press gesture (two finger tap for right click)
+    /// Handle long press gesture (two finger tap for scrolling)
     func handleLongPress(at position: CGPoint) {
-        handleRightClick()
+        print("🔍 handleLongPress called at position: \(position)")
+        // Two-finger tap should trigger scroll mode
+        // For now, implement a default scroll action
+        print("Two-finger tap detected - triggering scroll")
+        handleScroll(deltaX: 0, deltaY: 10) // Default scroll down (positive Y will be inverted to scroll down)
+    }
+    
+    /// Handle two-finger tap with direction-based scrolling
+    func handleTwoFingerTap(startPosition: CGPoint, endPosition: CGPoint) {
+        print("🔍 handleTwoFingerTap called")
+        print("🔍 Start position: \(startPosition)")
+        print("🔍 End position: \(endPosition)")
+        
+        let deltaX = endPosition.x - startPosition.x
+        let deltaY = endPosition.y - startPosition.y
+        
+        print("🔍 Raw deltas - X: \(deltaX), Y: \(deltaY)")
+        
+        // Determine scroll direction and magnitude
+        let scrollDeltaX = Int(deltaX / 10) // Reduce sensitivity
+        let scrollDeltaY = Int(deltaY / 10) // Reduce sensitivity
+        
+        print("🔍 Calculated scroll deltas - X: \(scrollDeltaX), Y: \(scrollDeltaY)")
+        print("Two-finger scroll - deltaX: \(scrollDeltaX), deltaY: \(scrollDeltaY)")
+        handleScroll(deltaX: scrollDeltaX, deltaY: scrollDeltaY)
+    }
+    
+    /// Start two-finger scrolling mode
+    func startTwoFingerScrolling() {
+        print("🔍 startTwoFingerScrolling called")
+        DispatchQueue.main.async {
+            self.isTwoFingerScrolling = true
+            print("🖱️ Two-finger scrolling mode: ON")
+        }
+    }
+    
+    /// End two-finger scrolling mode
+    func endTwoFingerScrolling() {
+        print("🔍 endTwoFingerScrolling called")
+        DispatchQueue.main.async {
+            self.isTwoFingerScrolling = false
+            print("🖱️ Two-finger scrolling mode: OFF")
+        }
+    }
+    
+    /// Handle continuous two-finger scrolling
+    func handleTwoFingerScrolling(currentPosition: CGPoint) {
+        print("🔍 handleTwoFingerScrolling called with position: \(currentPosition)")
+        print("🔍 isTwoFingerScrolling state: \(isTwoFingerScrolling)")
+        
+        guard isTwoFingerScrolling else { 
+            print("🔍 Two-finger scrolling not active, returning")
+            return 
+        }
+        
+        if let previousPos = previousPosition {
+            print("🔍 Previous position: \(previousPos)")
+            let deltaX = Int(currentPosition.x - previousPos.x)
+            let deltaY = Int(currentPosition.y - previousPos.y)
+            
+            print("🔍 Raw movement deltas - X: \(deltaX), Y: \(deltaY)")
+            
+            // Apply scrolling with reduced sensitivity for smooth scrolling
+            let scrollSensitivity = 2
+            let scrollDeltaX = deltaX / scrollSensitivity
+            let scrollDeltaY = deltaY / scrollSensitivity // Remove double inversion - handleScroll will handle the direction
+            
+            print("🔍 Scroll deltas after sensitivity - X: \(scrollDeltaX), Y: \(scrollDeltaY)")
+            
+            if abs(scrollDeltaX) > 1 || abs(scrollDeltaY) > 1 {
+                print("🔍 Calling handleScroll with deltas - X: \(scrollDeltaX), Y: \(scrollDeltaY)")
+                handleScroll(deltaX: scrollDeltaX, deltaY: scrollDeltaY) // Let handleScroll handle the direction
+            } else {
+                print("🔍 Deltas too small, not scrolling")
+            }
+        } else {
+            print("🔍 No previous position available")
+        }
+        
+        DispatchQueue.main.async {
+            self.previousPosition = currentPosition
+        }
     }
     
     /// Toggle selection mode
@@ -315,8 +444,15 @@ extension MouseInputManager {
             self.currentPosition = nil
             self.previousPosition = nil
             self.isSelectMode = false
+            self.isTwoFingerScrolling = false
             self.lastTapTime = 0
             print("🎯 Mouse state reset")
         }
+    }
+    
+    /// Test method to manually trigger a scroll (for debugging)
+    func testScroll() {
+        print("🔍 Manual test scroll triggered")
+        handleScroll(deltaX: 0, deltaY: 5) // Test scroll down
     }
 }

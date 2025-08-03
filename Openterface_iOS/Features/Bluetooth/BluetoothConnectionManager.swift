@@ -23,6 +23,11 @@ final class BluetoothConnectionManager: NSObject, ObservableObject {
     private var fff2Characteristic: CBCharacteristic?
     private var initializationTimer: Timer?
     private var qualityMonitoringTimer: Timer?
+    private var autoConnectTimer: Timer?
+    
+    // MARK: - Auto-Connection Configuration
+    @Published var autoConnectEnabled: Bool = true
+    private let autoConnectDelay: TimeInterval = 2.0 // Wait 2 seconds for additional devices
     
     // MARK: - UI Binding
     var showPopupBinding: Binding<Bool>?
@@ -54,6 +59,10 @@ extension BluetoothConnectionManager: ConnectionProtocol {
         print("🔍 Starting BLE scanning...")
         availableDevices.removeAll()
         
+        // Reset auto-connection timer
+        autoConnectTimer?.invalidate()
+        autoConnectTimer = nil
+        
         guard let centralManager = centralManager else {
             print("❌ Cannot start scanning - CBCentralManager not initialized")
             return
@@ -79,6 +88,11 @@ extension BluetoothConnectionManager: ConnectionProtocol {
     
     func connect(to device: BluetoothDevice) {
         print("🔗 Connecting to \(device.displayName)")
+        
+        // Cancel auto-connection timer since user is manually connecting
+        autoConnectTimer?.invalidate()
+        autoConnectTimer = nil
+        
         guard let centralManager = centralManager else {
             print("❌ Cannot connect - CBCentralManager not initialized")
             return
@@ -108,6 +122,15 @@ extension BluetoothConnectionManager: ConnectionProtocol {
             setupCentralManager()
         }
     }
+    
+    func setAutoConnectEnabled(_ enabled: Bool) {
+        autoConnectEnabled = enabled
+        if !enabled {
+            autoConnectTimer?.invalidate()
+            autoConnectTimer = nil
+        }
+        print("🤖 Auto-connection \(enabled ? "enabled" : "disabled")")
+    }
 }
 
 // MARK: - DataTransmissionProtocol Conformance
@@ -116,7 +139,7 @@ extension BluetoothConnectionManager: DataTransmissionProtocol {
         sendData(data) { result in
             switch result {
             case .success:
-                print("✅ Data sent successfully")
+                break
             case .failure(let error):
                 print("❌ Failed to send data: \(error.localizedDescription)")
             }
@@ -219,8 +242,48 @@ private extension BluetoothConnectionManager {
     
     func cleanup() {
         initializationTimer?.invalidate()
+        autoConnectTimer?.invalidate()
         stopQualityMonitoring()
         stopScanning()
+    }
+    
+    func checkForAutoConnection() {
+        guard autoConnectEnabled else { return }
+        guard connectedDevices.isEmpty else { return } // Don't auto-connect if already connected
+        
+        // Cancel any existing auto-connect timer
+        autoConnectTimer?.invalidate()
+        
+        if availableDevices.count == 1 {
+            // Start timer to wait for additional devices
+            print("🤖 Auto-connection: Found 1 device, waiting \(autoConnectDelay)s for more...")
+            autoConnectTimer = Timer.scheduledTimer(withTimeInterval: autoConnectDelay, repeats: false) { _ in
+                DispatchQueue.main.async {
+                    self.performAutoConnection()
+                }
+            }
+        } else if availableDevices.count > 1 {
+            // Multiple devices found, cancel auto-connection
+            print("🤖 Auto-connection: Multiple devices found (\(availableDevices.count)), user must choose")
+            autoConnectTimer?.invalidate()
+            autoConnectTimer = nil
+        }
+    }
+    
+    func performAutoConnection() {
+        guard autoConnectEnabled else { return }
+        guard connectedDevices.isEmpty else { return }
+        guard availableDevices.count == 1 else {
+            if availableDevices.count > 1 {
+                print("🤖 Auto-connection: Multiple devices now available (\(availableDevices.count)), user must choose")
+            }
+            return
+        }
+        
+        let device = availableDevices[0]
+        print("🤖 Auto-connecting to single available device: \(device.displayName)")
+        connect(to: device)
+        stopScanning() // Stop scanning once we auto-connect
     }
 }
 
@@ -255,6 +318,9 @@ extension BluetoothConnectionManager: CBCentralManagerDelegate {
             if !self.availableDevices.contains(device) {
                 peripheral.delegate = self
                 self.availableDevices.append(device)
+                
+                // Check for auto-connection
+                self.checkForAutoConnection()
             }
         }
     }

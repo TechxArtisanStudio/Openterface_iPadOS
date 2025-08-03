@@ -122,16 +122,6 @@ class ExternalKeyboardHandler: UIView {
     
     // MARK: - Key Mapping
     private func mapUIKeyToString(_ key: UIKey) -> String {
-        // Debug logging
-        print("🔍 Key mapping debug:")
-        print("  - Key code: \(key.keyCode.rawValue)")
-        print("  - Characters: '\(key.charactersIgnoringModifiers)'")
-        print("  - Characters count: \(key.charactersIgnoringModifiers.count)")
-        if !key.charactersIgnoringModifiers.isEmpty {
-            let char = key.charactersIgnoringModifiers.first!
-            print("  - First char unicode: u{\(String(format: "%02X", char.unicodeScalars.first?.value ?? 0))}")
-        }
-        
         // First check for modifier key usage codes
         let modifierKey = mapModifierKeyCode(key.keyCode)
         if modifierKey != "Unknown" {
@@ -168,9 +158,7 @@ class ExternalKeyboardHandler: UIView {
         }
         
         // Fallback to key code mapping for special keys
-        let keyCodeResult = mapKeyCode(key.keyCode)
-        print("🔍 Key code mapping result: '\(keyCodeResult)'")
-        return keyCodeResult
+        return mapKeyCode(key.keyCode)
     }
     
     private func mapModifierKeyCode(_ keyCode: UIKeyboardHIDUsage) -> String {
@@ -201,8 +189,6 @@ class ExternalKeyboardHandler: UIView {
     }
     
     private func mapKeyCode(_ keyCode: UIKeyboardHIDUsage) -> String {
-        print("🔍 Mapping key code: \(keyCode.rawValue)")
-        
         switch keyCode {
         // Arrow keys
         case .keyboardUpArrow: return "Up"
