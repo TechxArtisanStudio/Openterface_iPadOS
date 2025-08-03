@@ -116,11 +116,6 @@ struct ControlsView: View {
         VStack(spacing: 12) {
             // BLE Connection Status and Controls
             BluetoothStatusView(appCoordinator: appCoordinator)
-            
-            // Camera and Audio Info
-            if appCoordinator.cameraManager.currentDeviceName != nil {
-                CameraAudioInfoView(appCoordinator: appCoordinator)
-            }
         }
         .padding()
         .background(Color.backgroundPrimary)
@@ -133,6 +128,7 @@ struct BluetoothStatusView: View {
     
     var body: some View {
         VStack(spacing: 8) {
+            // BLE Connection row
             HStack {
                 Image(systemName: "antenna.radiowaves.left.and.right")
                     .font(.caption)
@@ -174,6 +170,25 @@ struct BluetoothStatusView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
             }
+            
+            // Audio monitoring row
+            HStack {
+                // Audio monitoring toggle on the left
+                Button(action: {
+                    if appCoordinator.cameraManager.isAudioAuthorized {
+                        appCoordinator.toggleAudioMonitoring()
+                    } else {
+                        appCoordinator.requestAudioAccess()
+                    }
+                }) {
+                    Image(systemName: audioMonitoringIcon)
+                        .font(.caption)
+                        .foregroundColor(audioMonitoringColor)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Spacer()
+            }
         }
     }
     
@@ -181,107 +196,19 @@ struct BluetoothStatusView: View {
         let connectedCount = appCoordinator.bluetoothManager.connectedDevices.count
         return connectedCount == 0 ? "Disconnected" : "\(connectedCount) Connected"
     }
-}
-
-// MARK: - Camera Audio Info View
-struct CameraAudioInfoView: View {
-    @ObservedObject var appCoordinator: AppCoordinator
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            // Video device info
-            HStack {
-                Image(systemName: "video.fill")
-                    .font(.caption)
-                    .foregroundColor(.primaryAccent)
-                Text("Video: \(appCoordinator.cameraManager.currentDeviceName ?? "Unknown")")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                // New camera indicator
-                if appCoordinator.cameraManager.hasNewCameraDetected {
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 6, height: 6)
-                        Text("New")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                    }
-                }
-            }
-            
-            // Audio device info
-            HStack {
-                Image(systemName: audioIconName)
-                    .font(.caption)
-                    .foregroundColor(audioIconColor)
-                
-                Text(audioStatusText)
-                    .font(.caption)
-                    .foregroundColor(audioTextColor)
-                
-                Spacer()
-                
-                // Audio monitoring toggle
-                if appCoordinator.cameraManager.isAudioAuthorized {
-                    Button(action: {
-                        appCoordinator.toggleAudioMonitoring()
-                    }) {
-                        Image(systemName: audioMonitoringIcon)
-                            .font(.caption)
-                            .foregroundColor(audioMonitoringColor)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                // New audio device indicator
-                if appCoordinator.cameraManager.hasNewAudioDeviceDetected {
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 6, height: 6)
-                        Text("New")
-                            .font(.caption2)
-                            .foregroundColor(.green)
-                    }
-                }
-            }
-        }
-    }
-    
-    private var audioIconName: String {
-        return appCoordinator.cameraManager.isAudioAuthorized ? "mic.fill" : "mic.slash.fill"
-    }
-    
-    private var audioIconColor: Color {
-        return appCoordinator.cameraManager.isAudioAuthorized ? .green : .red
-    }
-    
-    private var audioStatusText: String {
-        if let audioDeviceName = appCoordinator.cameraManager.currentAudioDeviceName {
-            return "Audio: \(audioDeviceName)"
-        } else {
-            return appCoordinator.cameraManager.isAudioAuthorized ? "Audio: Searching..." : "Audio: No Access"
-        }
-    }
-    
-    private var audioTextColor: Color {
-        if appCoordinator.cameraManager.currentAudioDeviceName != nil {
-            return .gray
-        } else {
-            return appCoordinator.cameraManager.isAudioAuthorized ? .orange : .red
-        }
-    }
     
     private var audioMonitoringIcon: String {
+        if !appCoordinator.cameraManager.isAudioAuthorized {
+            return "speaker.slash.fill"
+        }
         return appCoordinator.cameraManager.isAudioMonitoringEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill"
     }
     
     private var audioMonitoringColor: Color {
-        return appCoordinator.cameraManager.isAudioMonitoringEnabled ? .primaryAccent : .gray
+        if !appCoordinator.cameraManager.isAudioAuthorized {
+            return .red
+        }
+        return appCoordinator.cameraManager.isAudioMonitoringEnabled ? .green : .gray
     }
 }
 

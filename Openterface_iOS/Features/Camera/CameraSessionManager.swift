@@ -58,6 +58,15 @@ final class CameraSessionManager: NSObject, ObservableObject {
         return _captureSession
     }
     
+    /// Check if an Openterface camera is currently connected and selected
+    var hasOpenterfaceCamera: Bool {
+        guard let selectedCamera = selectedCamera else { return false }
+        
+        // Check if the camera name contains "Openterface" (case insensitive)
+        let cameraName = selectedCamera.localizedName.lowercased()
+        return cameraName.contains("openterface")
+    }
+    
     /// Get or create a preview layer for the current capture session
     func getPreviewLayer() -> AVCaptureVideoPreviewLayer? {
         print("🎬 === getPreviewLayer called ===")

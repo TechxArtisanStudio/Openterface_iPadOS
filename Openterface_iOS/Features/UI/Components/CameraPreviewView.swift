@@ -34,6 +34,9 @@ struct CameraPreviewView: UIViewRepresentable {
         // Setup preview layer when session becomes available
         if cameraManager.captureSession != nil && cameraManager.isAuthorized {
             setupPreviewLayer(in: uiView, context: context)
+        } else if cameraManager.isAuthorized && !cameraManager.hasOpenterfaceCamera {
+            // Show guide image when authorized but no Openterface camera
+            setupPreviewLayer(in: uiView, context: context)
         }
         
         // Start session if it's not running and we have everything needed
@@ -47,6 +50,13 @@ struct CameraPreviewView: UIViewRepresentable {
         if let previewLayer = context.coordinator.previewLayer {
             DispatchQueue.main.async {
                 previewLayer.frame = uiView.bounds
+            }
+        }
+        
+        // Update the background image view frame to match the view bounds
+        if let imageView = context.coordinator.backgroundImageView {
+            DispatchQueue.main.async {
+                imageView.frame = uiView.bounds
             }
         }
     }
@@ -74,25 +84,68 @@ struct CameraPreviewView: UIViewRepresentable {
                 context.coordinator.previewLayer = nil
             }
             
+            // Remove existing background image view if any
+            if let existingImageView = context.coordinator.backgroundImageView {
+                existingImageView.removeFromSuperview()
+                context.coordinator.backgroundImageView = nil
+            }
+            
             guard let previewLayer = self.cameraManager.getPreviewLayer() else {
-                // Show a black background as fallback
-                view.backgroundColor = UIColor.black
+                // Check if we have camera authorization but no Openterface camera
+                if self.cameraManager.isAuthorized && !self.cameraManager.hasOpenterfaceCamera {
+                    // Show the guide image instead of black background
+                    self.setupGuideImageView(in: view, context: context)
+                } else {
+                    // Show a black background as fallback
+                    view.backgroundColor = UIColor.black
+                }
                 return
             }
             
-            previewLayer.frame = view.bounds
-            previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
-            
-            // Update orientation
-            self.updateLayerOrientation(previewLayer)
-            
-            view.layer.addSublayer(previewLayer)
-            context.coordinator.previewLayer = previewLayer
-            
-            // Force a layout update
-            view.setNeedsLayout()
-            view.layoutIfNeeded()
+            // We have a preview layer - check if it's from an Openterface camera
+            if self.cameraManager.hasOpenterfaceCamera {
+                // Show the camera preview
+                previewLayer.frame = view.bounds
+                previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
+                
+                // Update orientation
+                self.updateLayerOrientation(previewLayer)
+                
+                view.layer.addSublayer(previewLayer)
+                context.coordinator.previewLayer = previewLayer
+                
+                // Force a layout update
+                view.setNeedsLayout()
+                view.layoutIfNeeded()
+            } else {
+                // Not an Openterface camera, show guide image
+                self.setupGuideImageView(in: view, context: context)
+            }
         }
+    }
+    
+    private func setupGuideImageView(in view: UIView, context: Context) {
+        // Create and configure the image view
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "guide")
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = UIColor.black
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(imageView)
+        
+        // Set up constraints to fill the view
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: view.topAnchor),
+            imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imageView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        // Store reference for cleanup
+        context.coordinator.backgroundImageView = imageView
+        
+        print("✅ Guide image displayed - no Openterface camera connected")
     }
     
     private func setupGestureRecognizers(for view: UIView, context: Context) {
@@ -209,6 +262,7 @@ extension CameraPreviewView {
     class Coordinator: NSObject {
         var parent: CameraPreviewView
         var previewLayer: AVCaptureVideoPreviewLayer?
+        var backgroundImageView: UIImageView?
         private var orientationObserver: (() -> Void)?
         
         init(_ parent: CameraPreviewView) {
