@@ -31,6 +31,15 @@ final class CameraSessionManager: NSObject, ObservableObject {
     // Orientation correction for external cameras
     @Published var orientationCorrectionMode: OrientationCorrectionMode = .inverted
     
+    // Zoom properties
+    @Published var currentZoomFactor: CGFloat = 1.0
+    @Published var minZoomFactor: CGFloat = 1.0
+    @Published var maxZoomFactor: CGFloat = 5.0
+    
+    // Viewport position properties for panning when zoomed
+    @Published var viewportPosition: CGPoint = CGPoint.zero
+    @Published var maxViewportOffset: CGPoint = CGPoint.zero
+    
     // MARK: - Private Properties
     private var _captureSession: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
@@ -870,6 +879,9 @@ private extension CameraSessionManager {
             captureSession.commitConfiguration()
             print("✅ Capture session configured successfully")
             
+            // Update zoom range for the new camera
+            updateZoomRange()
+            
         } catch {
             print("❌ Failed to setup capture session: \(error)")
             captureSession.commitConfiguration()
@@ -947,6 +959,128 @@ enum CameraError: LocalizedError {
         case .permissionDenied:
             return "Camera permission denied"
         }
+    }
+}
+
+// MARK: - Camera Session Manager Extension for Zoom
+extension CameraSessionManager {
+    /// Set zoom factor for the current camera device
+    func setZoomFactor(_ zoomFactor: CGFloat) {
+        guard let device = selectedCamera,
+              device.activeFormat.videoMaxZoomFactor >= zoomFactor else {
+            print("⚠️ Zoom factor \(zoomFactor) exceeds device maximum")
+            return
+        }
+        
+        let clampedZoom = max(minZoomFactor, min(maxZoomFactor, zoomFactor))
+        
+        print("🔍 setZoomFactor called - requested: \(zoomFactor), clamped: \(clampedZoom), current: \(currentZoomFactor)")
+        
+        // Update the published property first (on main thread if needed)
+        let oldZoom = currentZoomFactor
+        if Thread.isMainThread {
+            self.currentZoomFactor = clampedZoom
+        } else {
+            DispatchQueue.main.sync {
+                self.currentZoomFactor = clampedZoom
+            }
+        }
+        print("🔍 Updated currentZoomFactor from \(oldZoom) to \(self.currentZoomFactor)")
+        
+        // Then update the device
+        do {
+            try device.lockForConfiguration()
+            device.videoZoomFactor = clampedZoom
+            device.unlockForConfiguration()
+            
+            print("🔍 Device zoom factor set to: \(clampedZoom)")
+        } catch {
+            print("❌ Failed to set device zoom factor: \(error)")
+            // If device update fails, revert the published property
+            if Thread.isMainThread {
+                self.currentZoomFactor = oldZoom
+            } else {
+                DispatchQueue.main.sync {
+                    self.currentZoomFactor = oldZoom
+                }
+            }
+        }
+    }
+    
+    /// Get the available zoom range for the current camera
+    func updateZoomRange() {
+        guard let device = selectedCamera else {
+            DispatchQueue.main.async {
+                self.minZoomFactor = 1.0
+                self.maxZoomFactor = 1.0
+                self.currentZoomFactor = 1.0
+            }
+            return
+        }
+        
+        let deviceMaxZoom = device.activeFormat.videoMaxZoomFactor
+        let deviceCurrentZoom = device.videoZoomFactor
+        
+        DispatchQueue.main.async {
+            self.minZoomFactor = 1.0
+            // Limit max zoom to reasonable value (like 5x) or device max, whichever is smaller
+            self.maxZoomFactor = min(5.0, deviceMaxZoom)
+            // Only update current zoom if it's different (to avoid overriding user changes)
+            if abs(self.currentZoomFactor - deviceCurrentZoom) > 0.01 {
+                self.currentZoomFactor = deviceCurrentZoom
+                print("🔍 Synced currentZoomFactor to device value: \(deviceCurrentZoom)")
+            }
+        }
+        
+        print("🔍 Zoom range updated - min: \(minZoomFactor), max: \(maxZoomFactor), current: \(currentZoomFactor), device: \(deviceCurrentZoom)")
+    }
+    
+    /// Reset zoom to 1.0x
+    func resetZoom() {
+        setZoomFactor(1.0)
+        resetViewport()
+    }
+    
+    /// Update viewport position for panning when zoomed
+    func updateViewportPosition(_ translation: CGPoint, viewBounds: CGRect) {
+        guard currentZoomFactor > 1.0 else {
+            // Reset viewport when not zoomed
+            DispatchQueue.main.async {
+                self.viewportPosition = CGPoint.zero
+            }
+            return
+        }
+        
+        // Calculate maximum pan distance based on zoom level
+        // The further zoomed in, the more we can pan
+        let zoomScale = currentZoomFactor
+        let maxPanX = viewBounds.width * (zoomScale - 1.0) / 2.0
+        let maxPanY = viewBounds.height * (zoomScale - 1.0) / 2.0
+        
+        // Apply translation with good sensitivity for smooth control
+        let sensitivity: CGFloat = 1.0
+        let newX = viewportPosition.x + translation.x * sensitivity
+        let newY = viewportPosition.y + translation.y * sensitivity
+        
+        // Clamp the position to valid bounds
+        let clampedX = max(-maxPanX, min(maxPanX, newX))
+        let clampedY = max(-maxPanY, min(maxPanY, newY))
+        
+        DispatchQueue.main.async {
+            self.viewportPosition = CGPoint(x: clampedX, y: clampedY)
+            self.maxViewportOffset = CGPoint(x: maxPanX, y: maxPanY)
+        }
+        
+        print("🔍 Viewport updated - position: (\(clampedX), \(clampedY)), max: (\(maxPanX), \(maxPanY)), zoom: \(zoomScale)")
+    }
+    
+    /// Reset viewport position to center
+    func resetViewport() {
+        DispatchQueue.main.async {
+            self.viewportPosition = CGPoint.zero
+            self.maxViewportOffset = CGPoint.zero
+        }
+        print("🔍 Viewport reset to center")
     }
 }
 

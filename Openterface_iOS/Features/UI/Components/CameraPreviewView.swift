@@ -49,7 +49,7 @@ struct CameraPreviewView: UIViewRepresentable {
         // Update the preview layer frame to match the view bounds
         if let previewLayer = context.coordinator.previewLayer {
             DispatchQueue.main.async {
-                previewLayer.frame = uiView.bounds
+                self.updatePreviewLayerTransform(previewLayer, in: uiView)
             }
         }
         
@@ -105,8 +105,10 @@ struct CameraPreviewView: UIViewRepresentable {
             // We have a preview layer - check if it's from an Openterface camera
             if self.cameraManager.hasOpenterfaceCamera {
                 // Show the camera preview
-                previewLayer.frame = view.bounds
                 previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
+                
+                // Apply frame and transform
+                self.updatePreviewLayerTransform(previewLayer, in: view)
                 
                 // Update orientation
                 self.updateLayerOrientation(previewLayer)
@@ -156,6 +158,7 @@ struct CameraPreviewView: UIViewRepresentable {
         let panGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
         panGesture.minimumNumberOfTouches = 1
         panGesture.maximumNumberOfTouches = 2 // Allow both single and two-finger pans
+        panGesture.delegate = context.coordinator
         view.addGestureRecognizer(panGesture)
         
         // Tap gesture for mouse clicks
@@ -163,6 +166,15 @@ struct CameraPreviewView: UIViewRepresentable {
         tapGesture.numberOfTapsRequired = 1
         tapGesture.numberOfTouchesRequired = 1
         view.addGestureRecognizer(tapGesture)
+        
+        // Double-tap gesture for zoom reset
+        let doubleTapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleDoubleTap(_:)))
+        doubleTapGesture.numberOfTapsRequired = 2
+        doubleTapGesture.numberOfTouchesRequired = 1
+        view.addGestureRecognizer(doubleTapGesture)
+        
+        // Make single tap wait for double tap to fail
+        tapGesture.require(toFail: doubleTapGesture)
         
         // Two-finger tap gesture for scrolling
         let twoFingerTapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTwoFingerTap(_:)))
@@ -174,14 +186,61 @@ struct CameraPreviewView: UIViewRepresentable {
         let longPressGesture = UILongPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleLongPress(_:)))
         longPressGesture.minimumPressDuration = 0.5
         view.addGestureRecognizer(longPressGesture)
+        
+        // Pinch gesture for zoom
+        let pinchGesture = UIPinchGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePinch(_:)))
+        pinchGesture.delegate = context.coordinator
+        view.addGestureRecognizer(pinchGesture)
+        
+        // Three-finger pan gesture for viewport movement when zoomed
+        let threeFingerPanGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleThreeFingerPan(_:)))
+        threeFingerPanGesture.minimumNumberOfTouches = 3
+        threeFingerPanGesture.maximumNumberOfTouches = 3
+        threeFingerPanGesture.delegate = context.coordinator
+        view.addGestureRecognizer(threeFingerPanGesture)
+        
+        // Store gesture references in coordinator for delegation
+        context.coordinator.panGesture = panGesture
+        context.coordinator.pinchGesture = pinchGesture
+        context.coordinator.threeFingerPanGesture = threeFingerPanGesture
     }
     
     private func updatePreviewOrientation(in view: UIView, context: Context) {
         guard let previewLayer = context.coordinator.previewLayer else { return }
         
         DispatchQueue.main.async {
-            previewLayer.frame = view.bounds
+            self.updatePreviewLayerTransform(previewLayer, in: view)
             self.updateLayerOrientation(previewLayer)
+        }
+    }
+    
+    internal func updatePreviewLayerTransform(_ previewLayer: AVCaptureVideoPreviewLayer, in view: UIView) {
+        let viewBounds = view.bounds
+        let zoomFactor = cameraManager.currentZoomFactor
+        let viewportPosition = cameraManager.viewportPosition
+        
+        // Always set the base frame to view bounds first
+        previewLayer.frame = viewBounds
+        
+        if zoomFactor > 1.0 {
+            // Use transform for zoom and pan - much more reliable than frame manipulation
+            var transform = CATransform3DIdentity
+            
+            // Apply scale for zoom
+            transform = CATransform3DScale(transform, zoomFactor, zoomFactor, 1.0)
+            
+            // Apply translation for panning (scaled appropriately)
+            let scaledTranslationX = viewportPosition.x
+            let scaledTranslationY = viewportPosition.y
+            transform = CATransform3DTranslate(transform, scaledTranslationX, scaledTranslationY, 0.0)
+            
+            previewLayer.transform = transform
+            
+            print("🔍 Preview layer transform applied - zoom: \(zoomFactor), translation: (\(scaledTranslationX), \(scaledTranslationY))")
+        } else {
+            // Reset transform when not zoomed
+            previewLayer.transform = CATransform3DIdentity
+            print("🔍 Preview layer transform reset to identity")
         }
     }
     
@@ -259,11 +318,16 @@ struct CameraPreviewView: UIViewRepresentable {
 
 // MARK: - Coordinator
 extension CameraPreviewView {
-    class Coordinator: NSObject {
+    class Coordinator: NSObject, UIGestureRecognizerDelegate {
         var parent: CameraPreviewView
         var previewLayer: AVCaptureVideoPreviewLayer?
         var backgroundImageView: UIImageView?
         private var orientationObserver: (() -> Void)?
+        
+        // Gesture references for delegation
+        var panGesture: UIPanGestureRecognizer?
+        var pinchGesture: UIPinchGestureRecognizer?
+        var threeFingerPanGesture: UIPanGestureRecognizer?
         
         init(_ parent: CameraPreviewView) {
             self.parent = parent
@@ -381,6 +445,18 @@ extension CameraPreviewView {
             parent.mouseManager.handleTap(at: location)
         }
         
+        @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+            print("🔍 Double tap gesture detected - resetting zoom")
+            parent.cameraManager.resetZoom()
+            
+            // Immediately update the preview layer transform
+            if let previewLayer = self.previewLayer, let view = gesture.view {
+                DispatchQueue.main.async {
+                    self.parent.updatePreviewLayerTransform(previewLayer, in: view)
+                }
+            }
+        }
+        
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
             if gesture.state == .began {
                 print("🔍 Long press gesture detected in UI")
@@ -398,8 +474,108 @@ extension CameraPreviewView {
             parent.mouseManager.handleLongPress(at: location)
         }
         
+        @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+            print("🔍 Pinch gesture detected - scale: \(gesture.scale), state: \(gesture.state.rawValue)")
+            
+            switch gesture.state {
+            case .began:
+                print("🔍 Pinch gesture began with scale: \(gesture.scale)")
+                print("🔍 Current zoom factor at start: \(parent.cameraManager.currentZoomFactor)")
+                
+            case .changed:
+                // Calculate new zoom factor based on current zoom and pinch scale
+                let currentZoom = parent.cameraManager.currentZoomFactor
+                let newZoomFactor = currentZoom * gesture.scale
+                
+                print("🔍 Pinch calculation - current: \(currentZoom), scale: \(gesture.scale), new: \(newZoomFactor)")
+                
+                // Apply zoom through camera manager
+                parent.cameraManager.setZoomFactor(newZoomFactor)
+                
+                // Immediately update the preview layer transform
+                if let previewLayer = self.previewLayer, let view = gesture.view {
+                    DispatchQueue.main.async {
+                        self.parent.updatePreviewLayerTransform(previewLayer, in: view)
+                    }
+                }
+                
+                // Reset gesture scale to prevent compounding
+                gesture.scale = 1.0
+                
+                print("🔍 Pinch changed - applied zoom factor: \(newZoomFactor), current published: \(parent.cameraManager.currentZoomFactor)")
+                
+            case .ended, .cancelled:
+                print("🔍 Pinch gesture ended - final zoom: \(parent.cameraManager.currentZoomFactor)")
+                
+            default:
+                break
+            }
+        }
+        
+        @objc func handleThreeFingerPan(_ gesture: UIPanGestureRecognizer) {
+            print("🔍 Three-finger pan gesture detected - state: \(gesture.state.rawValue)")
+            
+            // Only allow panning when zoomed in
+            guard parent.cameraManager.currentZoomFactor > 1.0 else {
+                print("🔍 Three-finger pan ignored - not zoomed in")
+                return
+            }
+            
+            switch gesture.state {
+            case .began:
+                print("🔍 Three-finger pan began")
+                
+            case .changed:
+                let translation = gesture.translation(in: gesture.view)
+                
+                // Invert translation for more natural panning (pan right to see content on the left)
+                let invertedTranslation = CGPoint(x: -translation.x, y: -translation.y)
+                
+                // Update viewport position through camera manager
+                if let viewBounds = gesture.view?.bounds {
+                    parent.cameraManager.updateViewportPosition(invertedTranslation, viewBounds: viewBounds)
+                    
+                    // Immediately update the preview layer transform
+                    if let previewLayer = self.previewLayer {
+                        DispatchQueue.main.async {
+                            self.parent.updatePreviewLayerTransform(previewLayer, in: gesture.view!)
+                        }
+                    }
+                }
+                
+                // Reset translation to get incremental changes
+                gesture.setTranslation(.zero, in: gesture.view)
+                
+                print("🔍 Three-finger pan translation: \(translation), inverted: \(invertedTranslation)")
+                
+            case .ended, .cancelled:
+                print("🔍 Three-finger pan ended")
+                
+            default:
+                break
+            }
+        }
+        
         deinit {
             NotificationCenter.default.removeObserver(self)
+        }
+        
+        // MARK: - UIGestureRecognizerDelegate
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            // Allow pinch and pan to work simultaneously when pinch has 2 fingers
+            if gestureRecognizer == pinchGesture && otherGestureRecognizer == panGesture {
+                return true
+            }
+            if gestureRecognizer == panGesture && otherGestureRecognizer == pinchGesture {
+                return true
+            }
+            
+            // Allow three-finger pan to work independently
+            if gestureRecognizer == threeFingerPanGesture || otherGestureRecognizer == threeFingerPanGesture {
+                return false // Three-finger pan should be exclusive
+            }
+            
+            return false
         }
     }
 }

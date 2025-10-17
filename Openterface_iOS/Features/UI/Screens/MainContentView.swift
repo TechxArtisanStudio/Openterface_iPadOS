@@ -65,6 +65,53 @@ struct MainContentView: View {
                         .background(Color.black.opacity(0.7))
                         .cornerRadius(12)
                     }
+                    
+                    // Zoom indicator (top-right corner)
+                    VStack {
+                        HStack {
+                            Spacer()
+                            VStack(spacing: 8) {
+                                // Zoom indicator
+                                if appCoordinator.cameraManager.currentZoomFactor > 1.0 {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(.white)
+                                        Text("\(String(format: "%.1f", appCoordinator.cameraManager.currentZoomFactor))x")
+                                            .font(.caption)
+                                            .foregroundColor(.white)
+                                            .fontWeight(.medium)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(Color.black.opacity(0.6))
+                                    .cornerRadius(20)
+                                    .transition(.opacity.combined(with: .scale))
+                                }
+                                
+                                // Pan hint when zoomed
+                                if appCoordinator.cameraManager.currentZoomFactor > 1.0 {
+                                    VStack(spacing: 2) {
+                                        Image(systemName: "hand.draw")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.white.opacity(0.8))
+                                        Text("3 fingers to pan")
+                                            .font(.caption2)
+                                            .foregroundColor(.white.opacity(0.8))
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.black.opacity(0.4))
+                                    .cornerRadius(12)
+                                    .transition(.opacity.combined(with: .scale))
+                                }
+                            }
+                        }
+                        .padding(.top, 60) // Account for safe area
+                        .padding(.trailing, 16)
+                        Spacer()
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: appCoordinator.cameraManager.currentZoomFactor)
                 }
                 
                 // Controls at the bottom
