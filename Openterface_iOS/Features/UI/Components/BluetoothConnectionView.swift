@@ -67,10 +67,6 @@ struct BluetoothConnectionView: View {
     // MARK: - Header View
     private var headerView: some View {
         VStack(spacing: 8) {
-            Image(systemName: "antenna.radiowaves.left.and.right")
-                .font(.system(size: 50))
-                .foregroundColor(.primaryAccent)
-            
             Text("Bluetooth Connection")
                 .font(.title2)
                 .fontWeight(.semibold)

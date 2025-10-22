@@ -25,7 +25,11 @@ struct ControlsView: View {
             HStack(spacing: 12) {
                 // 1. BLE Connectivity Button
                 ControlButton(
-                    icon: "antenna.radiowaves.left.and.right",
+                    customIcon: BluetoothLogoView(
+                        color: bleIconColor ?? .gray,
+                        size: 18
+                    )
+                    .frame(width: 18, height: 18),
                     label: "BLE",
                     action: {
                         appCoordinator.showBluetoothConnection()
@@ -33,7 +37,7 @@ struct ControlsView: View {
                     bottomIndicatorColor: bleIndicatorColor,
                     iconColor: bleIconColor,
                     rssiText: bleRssiText,
-                    fixedWidth: 80
+                    fixedWidth: 60
                 )
                 
                 // 2. Video Settings Button
