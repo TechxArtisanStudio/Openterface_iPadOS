@@ -12,12 +12,13 @@ struct MainContentView: View {
     @StateObject private var appCoordinator = AppCoordinator()
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Debug print for authorization status
-            let _ = print("🖥️ MainContentView body - isAuthorized: \(appCoordinator.cameraManager.isAuthorized)")
-            let _ = print("🖥️ MainContentView body - cameraManager object: \(appCoordinator.cameraManager)")
-            
-            if appCoordinator.cameraManager.isAuthorized {
+        ZStack {
+            VStack(spacing: 0) {
+                // Debug print for authorization status
+                let _ = print("🖥️ MainContentView body - isAuthorized: \(appCoordinator.cameraManager.isAuthorized)")
+                let _ = print("🖥️ MainContentView body - cameraManager object: \(appCoordinator.cameraManager)")
+                
+                if appCoordinator.cameraManager.isAuthorized {
                 // Camera preview takes full width and most of the screen
                 ZStack {
                     CameraPreviewView(
@@ -26,6 +27,7 @@ struct MainContentView: View {
                         appCoordinator: appCoordinator
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .edgesIgnoringSafeArea(appCoordinator.isFullScreen ? .all : [])
                     .onAppear {
                         print("📱 CameraPreviewView appeared in MainContentView")
                         print("🖥️ Camera authorized: \(appCoordinator.cameraManager.isAuthorized)")
@@ -115,8 +117,11 @@ struct MainContentView: View {
                     .animation(.easeInOut(duration: 0.2), value: appCoordinator.cameraManager.currentZoomFactor)
                 }
                 
-                // Controls at the bottom
-                ControlsView(appCoordinator: appCoordinator)
+                // Controls at the bottom (hidden in fullscreen mode)
+                if !appCoordinator.isFullScreen {
+                    ControlsView(appCoordinator: appCoordinator)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
                 
             } else {
                 // Permission request view
@@ -126,7 +131,35 @@ struct MainContentView: View {
                     }
             }
         }
-        .onAppear {
+        
+        // Exit fullscreen button - overlaid on top of all layers (top-left corner)
+        if appCoordinator.isFullScreen {
+            VStack {
+                HStack {
+                    Button(action: {
+                        withAnimation {
+                            appCoordinator.isFullScreen = false
+                        }
+                    }) {
+                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(Circle())
+                    }
+                    .opacity(0.7)
+                    .padding(.top, 5)
+                    .padding(.leading, 16)
+                    Spacer()
+                }
+                Spacer()
+            }
+        }
+    }
+    // .animation(.easeInOut(duration: 0.3), value: appCoordinator.isFullScreen)
+    .statusBar(hidden: appCoordinator.isFullScreen)
+    .onAppear {
             print("📱 MainContentView appeared")
             // App lifecycle handled in AppCoordinator
         }

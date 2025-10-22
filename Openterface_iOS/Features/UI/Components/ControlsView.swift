@@ -146,6 +146,15 @@ struct ControlsView: View {
                     isActive: appCoordinator.isZoomMode
                 )
 
+                // 7.5. Fullscreen Button
+                ControlButton(
+                    icon: "arrow.up.left.and.arrow.down.right",
+                    label: "Fullscreen",
+                    action: {
+                        appCoordinator.isFullScreen.toggle()
+                    },
+                    isActive: appCoordinator.isFullScreen
+                )
 
                 // 8. Rotate Button
                 ControlButton(

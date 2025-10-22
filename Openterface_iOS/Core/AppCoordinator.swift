@@ -25,6 +25,7 @@ final class AppCoordinator: ObservableObject {
     @Published var isRecording = false
     @Published var showResolutionView = false
     @Published var isZoomMode = false
+    @Published var isFullScreen = false
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
