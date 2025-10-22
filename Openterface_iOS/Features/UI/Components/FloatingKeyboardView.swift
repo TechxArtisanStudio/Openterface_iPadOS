@@ -112,8 +112,21 @@ struct FloatingKeyboardView: View {
                             isPressed: keyboardManager.pressedKeys.contains(key),
                             isModifier: isModifierKey(key),
                             isModifierActive: isModifierActive(key),
-                            action: {
-                                handleKeyPress(key)
+                            onPress: {
+                                // Add haptic feedback
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                impactFeedback.impactOccurred()
+                                
+                                if self.isModifierKey(key) {
+                                    self.handleKeyPress(key)
+                                } else {
+                                    self.keyboardManager.handleKeyPress(key)
+                                }
+                            },
+                            onRelease: {
+                                if !self.isModifierKey(key) {
+                                    self.keyboardManager.handleKeyRelease(key)
+                                }
                             }
                         )
                     }
@@ -216,9 +229,8 @@ struct FloatingKeyboardView: View {
             } else {
                 keyboardManager.handleModifierToggle(key)
             }
-        } else {
-            keyboardManager.handleKeyPress(key)
         }
+        // For regular keys, handleKeyPress is called directly in onPress
     }
     
     private func constrainToScreen() {
@@ -245,7 +257,8 @@ struct KeyButton: View {
     let isPressed: Bool
     let isModifier: Bool
     let isModifierActive: Bool
-    let action: () -> Void
+    let onPress: () -> Void
+    let onRelease: () -> Void
     
     @State private var isButtonPressed = false
     
@@ -261,27 +274,47 @@ struct KeyButton: View {
     }
     
     var body: some View {
-        Button(action: {
-            // Add haptic feedback
-            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-            impactFeedback.impactOccurred()
+        ZStack {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(buttonColor)
+                .frame(width: width, height: keyHeight)
             
-            action()
-        }) {
             Text(displayValue)
                 .font(.system(size: fontSize, weight: .medium))
-                .frame(width: width, height: keyHeight)
+                .foregroundColor(buttonTextColor)
         }
-        .keyboardButtonStyle(
-            isPressed: isButtonPressed || isPressed,
-            isModifier: isModifier,
-            isActive: isModifierActive
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isButtonPressed {
+                        isButtonPressed = true
+                        onPress()
+                    }
+                }
+                .onEnded { _ in
+                    if isButtonPressed {
+                        isButtonPressed = false
+                        onRelease()
+                    }
+                }
         )
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-            withAnimation(.easeInOut(duration: 0.05)) {
-                isButtonPressed = pressing
-            }
-        }, perform: {})
+    }
+    
+    private var buttonColor: Color {
+        if isButtonPressed || isPressed {
+            return isModifier ? (isModifierActive ? Color.blue.opacity(0.8) : Color.gray.opacity(0.6)) : Color.blue.opacity(0.6)
+        } else {
+            return isModifier ? (isModifierActive ? Color.blue.opacity(0.4) : Color.gray.opacity(0.2)) : Color.gray.opacity(0.1)
+        }
+    }
+    
+    private var buttonTextColor: Color {
+        if isButtonPressed || isPressed {
+            return .white
+        } else {
+            return .primary
+        }
     }
 }
 

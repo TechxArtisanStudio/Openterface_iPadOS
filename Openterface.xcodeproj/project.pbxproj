@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6B148F262EA61EBE00715D42 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F252EA61EBE00715D42 /* Logger.swift */; };
+		6B148F2E2EA72DBB00715D42 /* VideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F2D2EA72DBB00715D42 /* VideoManager.swift */; };
+		6B148F2F2EA72DBB00715D42 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F2C2EA72DBB00715D42 /* AudioManager.swift */; };
+		6B148F312EA7429400715D42 /* RecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F302EA7429400715D42 /* RecordingManager.swift */; };
+		6B148F362EA7A86C00715D42 /* VideoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */; };
+		6B148F382EA7A8A200715D42 /* SimulatorCameraMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F372EA7A8A200715D42 /* SimulatorCameraMock.swift */; };
+		6B5E94B22EA1F9B00027EB7B /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */; };
 		BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */; };
 		BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643F82E3E5917009F04D1 /* Assets.xcassets */; };
 		BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */; };
@@ -54,6 +61,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6B148F252EA61EBE00715D42 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		6B148F2C2EA72DBB00715D42 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		6B148F2D2EA72DBB00715D42 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
+		6B148F302EA7429400715D42 /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingManager.swift; sourceTree = "<group>"; };
+		6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
+		6B148F372EA7A8A200715D42 /* SimulatorCameraMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorCameraMock.swift; sourceTree = "<group>"; };
+		6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		BF0643F12E3E5910009F04D1 /* Openterface KVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Openterface KVM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSApp.swift; sourceTree = "<group>"; };
 		BF0643F82E3E5917009F04D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -203,6 +217,7 @@
 		BF4ED0402E3F45910045D619 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */,
 				BF4ED0412E3F45910045D619 /* UI */,
 				BF4ED0482E3F45910045D619 /* Input */,
 				BF4ED04E2E3F45910045D619 /* Camera */,
@@ -231,6 +246,7 @@
 		BF4ED0442E3F45910045D619 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */,
 				BF4ED0452E3F45910045D619 /* CameraPreviewView.swift */,
 				BF4ED0462E3F45910045D619 /* BluetoothConnectionView.swift */,
 				BF4ED0472E3F45910045D619 /* FloatingKeyboardView.swift */,
@@ -267,6 +283,10 @@
 		BF4ED04E2E3F45910045D619 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				6B148F372EA7A8A200715D42 /* SimulatorCameraMock.swift */,
+				6B148F302EA7429400715D42 /* RecordingManager.swift */,
+				6B148F2C2EA72DBB00715D42 /* AudioManager.swift */,
+				6B148F2D2EA72DBB00715D42 /* VideoManager.swift */,
 				BF4ED04F2E3F45910045D619 /* CameraSessionManager.swift */,
 			);
 			path = Camera;
@@ -318,6 +338,7 @@
 		BF4ED06C2E3F9B3C0045D619 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				6B148F252EA61EBE00715D42 /* Logger.swift */,
 				BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */,
 				BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */,
 			);
@@ -463,14 +484,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6B5E94B22EA1F9B00027EB7B /* ControlsView.swift in Sources */,
 				BF4ED03F2E3F45680045D619 /* InputProtocol.swift in Sources */,
 				BF4ED0612E3F45B10045D619 /* Extensions.swift in Sources */,
 				BF4ED0602E3F45B10045D619 /* HIDUtils.swift in Sources */,
 				BF4ED0532E3F45910045D619 /* CameraPreviewView.swift in Sources */,
+				6B148F362EA7A86C00715D42 /* VideoSettingsView.swift in Sources */,
 				BF4ED0572E3F45910045D619 /* KeyboardInputManager.swift in Sources */,
-				BF4ED03B2E3F45680045D619 /* ConnectionModels.swift in Sources */,
-				BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */,
 				BF4ED03A2E3F45680045D619 /* CameraModels.swift in Sources */,
+				BF4ED03B2E3F45680045D619 /* ConnectionModels.swift in Sources */,
+				6B148F262EA61EBE00715D42 /* Logger.swift in Sources */,
+				BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */,
+				6B148F312EA7429400715D42 /* RecordingManager.swift in Sources */,
 				BF4ED0392E3F45680045D619 /* AppCoordinator.swift in Sources */,
 				BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */,
 				BF4ED0582E3F45910045D619 /* CompositeKeyInputManager.swift in Sources */,
@@ -478,8 +503,11 @@
 				BF4ED0562E3F45910045D619 /* MouseInputManager.swift in Sources */,
 				BF4ED03C2E3F45680045D619 /* InputModels.swift in Sources */,
 				BF4ED0542E3F45910045D619 /* BluetoothConnectionView.swift in Sources */,
+				6B148F382EA7A8A200715D42 /* SimulatorCameraMock.swift in Sources */,
 				BF4ED0522E3F45910045D619 /* MainContentView.swift in Sources */,
 				BF4ED05A2E3F45910045D619 /* BluetoothConnectionManager.swift in Sources */,
+				6B148F2E2EA72DBB00715D42 /* VideoManager.swift in Sources */,
+				6B148F2F2EA72DBB00715D42 /* AudioManager.swift in Sources */,
 				BF4ED03D2E3F45680045D619 /* CameraProtocol.swift in Sources */,
 				BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */,
 				BF4ED03E2E3F45680045D619 /* ConnectionProtocol.swift in Sources */,
@@ -649,7 +677,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Openterface_iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				DEVELOPMENT_TEAM = NXWD68TXUQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Openterface;
@@ -658,6 +686,8 @@
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to connect to Openterface devices and display video feed.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to capture audio from your Openterface device and provide full audio/video preview functionality.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs permission to save screenshots and recordings to your Photo Library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app needs permission to access your Photo Library to save screenshots and recordings.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -685,7 +715,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Openterface_iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = 5RFKPUT7MQ;
+				DEVELOPMENT_TEAM = NXWD68TXUQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Openterface;
@@ -694,6 +724,8 @@
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "This app needs Bluetooth access to connect and communicate with your Openterface device for remote control functionality.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to connect to Openterface devices and display video feed.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs microphone access to capture audio from your Openterface device and provide full audio/video preview functionality.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs permission to save screenshots and recordings to your Photo Library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app needs permission to access your Photo Library to save screenshots and recordings.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -21,6 +21,10 @@ final class AppCoordinator: ObservableObject {
     // MARK: - UI State
     @Published var showBLEPopup = false
     @Published var showFloatingKeyboard = false
+    @Published var showAdvancedMenu = false
+    @Published var isRecording = false
+    @Published var showResolutionView = false
+    @Published var isZoomMode = false
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -81,6 +85,9 @@ final class AppCoordinator: ObservableObject {
         // Keep screen always on during usage
         UIApplication.shared.isIdleTimerDisabled = true
         
+        // Disable Bluetooth logging to reduce noise
+        Logger.shared.disableCategory(.bluetooth)
+        
         // Start initial services
         startInitialServices()
     }
@@ -99,6 +106,10 @@ final class AppCoordinator: ObservableObject {
         print("🚀 Camera isAuthorized after check: \(cameraManager.isAuthorized)")
         print("🚀 AppCoordinator startInitialServices - checking audio authorization")
         cameraManager.checkAudioAuthorization()
+        
+        // Note: Photo library permission is NOT requested at startup to avoid crashes
+        // It will be requested only when user first tries to save to Photos app
+        print("ℹ️ Photo library permission will be requested when user saves screenshots/recordings")
         
         // Initialize Bluetooth with delay to ensure proper setup
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -122,9 +133,16 @@ final class AppCoordinator: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Show BLE connection popup
+    /// Show bluetooth connection popup
     func showBluetoothConnection() {
+        print("� Showing bluetooth connection popup")
         showBLEPopup = true
+    }
+    
+    /// Show resolution view
+    func showResolution() {
+        print("📐 Showing resolution view")
+        showResolutionView = true
     }
     
     /// Show floating keyboard
@@ -162,9 +180,61 @@ final class AppCoordinator: ObservableObject {
         cameraManager.toggleAudioMonitoring()
     }
     
+    /// Toggle video recording
+    func toggleVideoRecording() {
+        isRecording.toggle()
+        if isRecording {
+            print("🎥 Starting video recording...")
+            cameraManager.startRecording()
+        } else {
+            print("🎥 Stopping video recording...")
+            cameraManager.stopRecording { result in
+                switch result {
+                case .success(let info):
+                    print("✅ Recording saved: \(info.url.lastPathComponent)")
+                    print("   Duration: \(info.durationFormatted)")
+                    print("   Size: \(info.fileSizeFormatted)")
+                case .failure(let error):
+                    print("❌ Recording failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    /// Capture screenshot
+    func captureScreenshot() {
+        print("📸 Capturing screenshot...")
+        cameraManager.captureScreenshot { result in
+            switch result {
+            case .success(let url):
+                print("\n" + String(repeating: "=", count: 70))
+                print("✅ SCREENSHOT SAVED SUCCESSFULLY!")
+                print(String(repeating: "=", count: 70))
+                print("📁 File Name: \(url.lastPathComponent)")
+                print("📂 Location: Documents/Recordings/")
+                print("🔗 Full Path: \(url.path)")
+                // You can add a UI notification here to show success
+            case .failure(let error):
+                print("\n" + String(repeating: "=", count: 70))
+                print("❌ SCREENSHOT FAILED")
+                print(String(repeating: "=", count: 70))
+                print("Error: \(error.localizedDescription)")
+                print(String(repeating: "=", count: 70) + "\n")
+                // You can add a UI alert here to show error
+            }
+        }
+    }
+    
     /// Force refresh authorization status
     func forceRefreshAuthorization() {
         cameraManager.forceRefreshAuthorization()
+    }
+    
+    /// Print where screenshots and recordings are saved
+    func printSaveLocations() {
+        print("\n" + String(repeating: "=", count: 60))
+        print(cameraManager.getSaveLocationDescription())
+        print(String(repeating: "=", count: 60) + "\n")
     }
     
     /// Get RSSI icon based on signal strength

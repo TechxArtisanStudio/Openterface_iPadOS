@@ -89,3 +89,33 @@ protocol DeviceDiscoveryProtocol: ObservableObject {
     /// Reset discovery flags
     func resetDiscoveryFlags()
 }
+
+/// Protocol for recording and screenshot capabilities
+protocol RecordingManagementProtocol: ObservableObject {
+    /// Current recording state
+    var recordingState: RecordingState { get }
+    
+    /// Current recording duration
+    var currentRecordingDuration: TimeInterval { get }
+    
+    /// Last completed recording information
+    var lastRecordingInfo: RecordingInfo? { get }
+    
+    /// Last captured screenshot URL
+    var lastScreenshotURL: URL? { get }
+    
+    /// Recording configuration
+    var recordingConfiguration: RecordingConfiguration { get set }
+    
+    /// Start video recording
+    func startRecording()
+    
+    /// Stop video recording with optional completion handler
+    func stopRecording(completion: ((Result<RecordingInfo, RecordingError>) -> Void)?)
+    
+    /// Capture a screenshot from the current camera feed
+    func captureScreenshot(completion: ((Result<URL, RecordingError>) -> Void)?)
+    
+    /// Update recording configuration
+    func updateRecordingConfiguration(_ configuration: RecordingConfiguration)
+}

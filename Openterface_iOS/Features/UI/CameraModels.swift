@@ -278,7 +278,7 @@ struct RecordingConfiguration {
     /// Video quality preset
     var videoQuality: VideoQuality = .high
     
-    /// Whether to include audio in recordings
+    /// Whether to include audio
     var includeAudio: Bool = true
     
     /// Whether to save to photo library

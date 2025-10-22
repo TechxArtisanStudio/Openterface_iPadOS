@@ -22,7 +22,8 @@ struct MainContentView: View {
                 ZStack {
                     CameraPreviewView(
                         cameraManager: appCoordinator.cameraManager,
-                        mouseManager: appCoordinator.mouseManager
+                        mouseManager: appCoordinator.mouseManager,
+                        appCoordinator: appCoordinator
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .onAppear {
@@ -155,41 +156,28 @@ struct MainContentView: View {
     }
 }
 
-// MARK: - Controls View
-struct ControlsView: View {
-    @ObservedObject var appCoordinator: AppCoordinator
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            // BLE Connection Status and Controls
-            BluetoothStatusView(appCoordinator: appCoordinator)
-        }
-        .padding()
-        .background(Color.backgroundPrimary)
-    }
-}
-
 // MARK: - Bluetooth Status View
 struct BluetoothStatusView: View {
     @ObservedObject var appCoordinator: AppCoordinator
+    @ObservedObject var bluetoothManager: BluetoothConnectionManager
     
     var body: some View {
         VStack(spacing: 8) {
-            // BLE Connection row
-            HStack {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                    .font(.caption)
-                    .foregroundColor(appCoordinator.bluetoothManager.connectedDevices.isEmpty ? .gray : .primaryAccent)
+            // BLE Connection row - Compact version with icon, RSSI, and status
+            HStack(spacing: 8) {
+                // BLE Settings Button (Left)
+                Button(action: {
+                    appCoordinator.showBluetoothConnection()
+                }) {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .font(.caption)
+                        .foregroundColor(.primaryAccent)
+                }
+                .buttonStyle(PlainButtonStyle())
                 
-                Text("BLE: \(connectionStatusText)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                // BLE RSSI indicator
-                if let rssi = appCoordinator.bluetoothManager.qualityMetric {
-                    HStack(spacing: 4) {
+                // RSSI Indicator
+                if let rssi = bluetoothManager.qualityMetric {
+                    HStack(spacing: 2) {
                         Image(systemName: appCoordinator.getRSSIIcon())
                             .font(.caption2)
                             .foregroundColor(appCoordinator.getRSSIColor())
@@ -199,14 +187,7 @@ struct BluetoothStatusView: View {
                     }
                 }
                 
-                Button(action: {
-                    appCoordinator.showBluetoothConnection()
-                }) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
-                        .font(.caption)
-                        .foregroundColor(.primaryAccent)
-                }
-                .buttonStyle(PlainButtonStyle())
+                Spacer()
                 
                 Button(action: {
                     appCoordinator.showKeyboard()
@@ -237,11 +218,6 @@ struct BluetoothStatusView: View {
                 Spacer()
             }
         }
-    }
-    
-    private var connectionStatusText: String {
-        let connectedCount = appCoordinator.bluetoothManager.connectedDevices.count
-        return connectedCount == 0 ? "Disconnected" : "\(connectedCount) Connected"
     }
     
     private var audioMonitoringIcon: String {
