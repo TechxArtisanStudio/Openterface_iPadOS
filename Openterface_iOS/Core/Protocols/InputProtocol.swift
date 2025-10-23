@@ -8,14 +8,8 @@
 import Foundation
 import CoreGraphics
 
-/// Protocol defining input handling capabilities
-protocol InputHandlerProtocol: ObservableObject {
-    /// Handle input event
-    func handleInput<T>(_ input: T)
-}
-
 /// Protocol for keyboard input handling
-protocol KeyboardInputProtocol: InputHandlerProtocol {
+protocol KeyboardInputProtocol: ObservableObject {
     /// Active modifier keys
     var activeModifiers: Set<String> { get }
     
@@ -42,7 +36,7 @@ protocol KeyboardInputProtocol: InputHandlerProtocol {
 }
 
 /// Protocol for mouse input handling
-protocol MouseInputProtocol: InputHandlerProtocol {
+protocol MouseInputProtocol: ObservableObject {
     /// Current mouse position
     var currentPosition: CGPoint? { get }
     

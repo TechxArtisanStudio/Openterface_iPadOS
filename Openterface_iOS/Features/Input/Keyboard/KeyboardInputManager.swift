@@ -17,6 +17,7 @@ final class KeyboardInputManager: ObservableObject {
     
     // MARK: - Dependencies
     private let connectionManager: any ConnectionProtocol
+    private let hidInputManager: HIDInputManager
     private var compositeKeyManager: CompositeKeyInputManager?
     private var isExternalKeyboard: Bool = false
     
@@ -82,6 +83,7 @@ final class KeyboardInputManager: ObservableObject {
     // MARK: - Initialization
     init(connectionManager: any ConnectionProtocol) {
         self.connectionManager = connectionManager
+        self.hidInputManager = HIDInputManager(connectionManager: connectionManager)
     }
     
     // MARK: - Configuration
@@ -107,12 +109,6 @@ final class KeyboardInputManager: ObservableObject {
 
 // MARK: - KeyboardInputProtocol Conformance
 extension KeyboardInputManager: KeyboardInputProtocol {
-    func handleInput<T>(_ input: T) {
-        if let keyEvent = input as? String {
-            handleKeyPress(keyEvent)
-        }
-    }
-    
     func handleKeyPress(_ key: String) {
         print("⌨️ Key pressed: \(key)")
         
@@ -326,18 +322,8 @@ private extension KeyboardInputManager {
     }
     
     func sendKeyboardData(modifier: UInt8, keyCodes: [UInt8]) {
-        // HID keyboard report format:
-        // [Report ID, Modifier, Reserved, Key1, Key2, Key3, Key4, Key5, Key6]
-        var dataPacket: [UInt8] = currentMode.dataPacketHeader
-        dataPacket.append(modifier)
-        dataPacket.append(0x00) // Reserved byte
-        dataPacket.append(contentsOf: keyCodes)
-        
-        // Calculate checksum
-        let sum = dataPacket.reduce(0 as UInt32, { $0 + UInt32($1) }) & 0xFF
-        dataPacket.append(UInt8(sum))
-        
-        connectionManager.dataTransmission.sendData(Data(dataPacket))
+        // Use HIDInputManager for sending keyboard data
+        hidInputManager.sendKeyboardInput(modifier: modifier, keyCodes: keyCodes, mode: currentMode)
     }
     
     func mapKeyAlias(_ key: String) -> String {

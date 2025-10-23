@@ -13,7 +13,9 @@
 		6B148F312EA7429400715D42 /* RecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F302EA7429400715D42 /* RecordingManager.swift */; };
 		6B148F362EA7A86C00715D42 /* VideoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */; };
 		6B148F382EA7A8A200715D42 /* SimulatorCameraMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F372EA7A8A200715D42 /* SimulatorCameraMock.swift */; };
+		6B148F3A2EA8E9FF00715D42 /* HIDInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F392EA8E9FF00715D42 /* HIDInputManager.swift */; };
 		6B5E94B22EA1F9B00027EB7B /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */; };
+		6BA1A1112EA8000000000001 /* BluetoothLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */; };
 		BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */; };
 		BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643F82E3E5917009F04D1 /* Assets.xcassets */; };
 		BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */; };
@@ -41,7 +43,6 @@
 		BF4ED0712E3F9B3D0045D619 /* HIDUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */; };
 		BF4ED0722E3F9B3D0045D619 /* ExternalKeyboardHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */; };
 		BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0702E3F9B3C0045D619 /* Extensions.swift */; };
-		6BA1A1112EA8000000000001 /* BluetoothLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,7 +69,9 @@
 		6B148F302EA7429400715D42 /* RecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingManager.swift; sourceTree = "<group>"; };
 		6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
 		6B148F372EA7A8A200715D42 /* SimulatorCameraMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorCameraMock.swift; sourceTree = "<group>"; };
+		6B148F392EA8E9FF00715D42 /* HIDInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIDInputManager.swift; sourceTree = "<group>"; };
 		6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
+		6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothLogoView.swift; sourceTree = "<group>"; };
 		BF0643F12E3E5910009F04D1 /* Openterface KVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Openterface KVM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSApp.swift; sourceTree = "<group>"; };
 		BF0643F82E3E5917009F04D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -99,7 +102,6 @@
 		BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HIDUtils.swift; sourceTree = "<group>"; };
 		BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExternalKeyboardHandler.swift; sourceTree = "<group>"; };
 		BF4ED0702E3F9B3C0045D619 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothLogoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -260,6 +262,7 @@
 		BF4ED0482E3F45910045D619 /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				6B148F392EA8E9FF00715D42 /* HIDInputManager.swift */,
 				BF4ED0492E3F45910045D619 /* Mouse */,
 				BF4ED04B2E3F45910045D619 /* Keyboard */,
 			);
@@ -500,6 +503,7 @@
 				BF4ED0592E3F45910045D619 /* CameraSessionManager.swift in Sources */,
 				6B148F312EA7429400715D42 /* RecordingManager.swift in Sources */,
 				BF4ED0392E3F45680045D619 /* AppCoordinator.swift in Sources */,
+				6B148F3A2EA8E9FF00715D42 /* HIDInputManager.swift in Sources */,
 				BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */,
 				BF4ED0582E3F45910045D619 /* CompositeKeyInputManager.swift in Sources */,
 				BF4ED0552E3F45910045D619 /* FloatingKeyboardView.swift in Sources */,

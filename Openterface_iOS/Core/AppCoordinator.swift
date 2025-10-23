@@ -26,6 +26,7 @@ final class AppCoordinator: ObservableObject {
     @Published var showResolutionView = false
     @Published var isZoomMode = false
     @Published var isFullScreen = false
+    @Published var isPencilMode = false // false = Pan mode (relative), true = iPencil mode (absolute)
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -224,6 +225,13 @@ final class AppCoordinator: ObservableObject {
                 // You can add a UI alert here to show error
             }
         }
+    }
+    
+    /// Toggle between Pan mode (relative) and iPencil mode (absolute)
+    func toggleMouseMode() {
+        isPencilMode.toggle()
+        mouseManager.setAbsoluteMode(isPencilMode)
+        print("🖱️ Mouse mode: \(isPencilMode ? "iPencil (Absolute)" : "Pan (Relative)")")
     }
     
     /// Force refresh authorization status

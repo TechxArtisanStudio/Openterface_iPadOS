@@ -15,9 +15,11 @@ struct CameraPreviewView: UIViewRepresentable {
     @ObservedObject var appCoordinator: AppCoordinator
     
     func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: CGRect.zero)
+        // Use TouchEnabledView to capture coalesced touches from Apple Pencil
+        let view = TouchEnabledView(frame: CGRect.zero)
         view.backgroundColor = UIColor.black
         view.clipsToBounds = true  // Ensure sublayers don't extend beyond bounds
+        view.coordinator = context.coordinator  // Link coordinator for touch handling
         
         setupPreviewLayer(in: view, context: context)
         setupGestureRecognizers(for: view, context: context)
@@ -422,8 +424,16 @@ extension CameraPreviewView {
         var threeFingerPanGesture: UIPanGestureRecognizer?
         var draggingIndicatorLabel: UILabel?
         
-        // Track pan gesture start position
-        private var panStartPosition: CGPoint = .zero
+        // Track pan gesture start position (internal access for TouchEnabledView)
+        var panStartPosition: CGPoint = .zero
+        
+        // Track initial touch position from touchesBegan (for Apple Pencil)
+        var initialTouchPosition: CGPoint? = nil
+        
+        // Touch tracking for drag end detection (internal access for TouchEnabledView)
+        var isDragging: Bool = false
+        var lastTouchLocation: CGPoint = .zero
+        private var dragEndCheckTimer: Timer?
         
         init(_ parent: CameraPreviewView) {
             self.parent = parent
@@ -445,13 +455,80 @@ extension CameraPreviewView {
             orientationObserver?()
         }
         
+        // Helper to get gesture state name for debugging
+        private func gestureStateName(_ state: UIGestureRecognizer.State) -> String {
+            switch state {
+            case .possible: return "possible"
+            case .began: return "began"
+            case .changed: return "changed"
+            case .ended: return "ended"
+            case .cancelled: return "cancelled"
+            case .failed: return "failed"
+            @unknown default: return "unknown"
+            }
+        }
+        
+        // Start monitoring for drag end using polling
+        private func startDragEndMonitoring() {
+            Logger.shared.debug("Starting drag end monitoring timer", category: .ui)
+            isDragging = true
+            
+            // Cancel any existing timer
+            dragEndCheckTimer?.invalidate()
+            
+            // Create a timer that checks every 0.1 seconds if dragging has ended
+            dragEndCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+                guard let self = self else {
+                    timer.invalidate()
+                    return
+                }
+                
+                // Check if pan gesture is no longer active
+                if let panGesture = self.panGesture,
+                   panGesture.state != .began && panGesture.state != .changed {
+                    Logger.shared.debug("Drag end detected by polling - gesture state: \(self.gestureStateName(panGesture.state))", category: .ui)
+                    self.endDragByPolling()
+                }
+            }
+        }
+        
+        // End drag detected by polling
+        private func endDragByPolling() {
+            guard isDragging else { return }
+            
+            Logger.shared.debug("Ending drag via polling mechanism", category: .ui)
+            isDragging = false
+            
+            // Stop timer
+            dragEndCheckTimer?.invalidate()
+            dragEndCheckTimer = nil
+            
+            // Trigger drag end
+            self.parent.mouseManager.handleDragGesture(
+                start: self.panStartPosition,
+                current: self.lastTouchLocation,
+                end: self.lastTouchLocation
+            )
+            Logger.shared.debug("Drag end triggered via polling - handleDragGesture called", category: .ui)
+            
+            panStartPosition = .zero
+        }
+        
+        // Stop drag monitoring
+        private func stopDragEndMonitoring() {
+            Logger.shared.debug("Stopping drag end monitoring timer", category: .ui)
+            isDragging = false
+            dragEndCheckTimer?.invalidate()
+            dragEndCheckTimer = nil
+        }
+        
         // MARK: - Gesture Handlers
         @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
             let currentLocation = gesture.location(in: gesture.view)
             let numberOfTouches = gesture.numberOfTouches
             
             let isZoomMode = parent.appCoordinator.isZoomMode
-            Logger.shared.debug("Pan gesture - state: \(gesture.state.rawValue), touches: \(numberOfTouches), location: \(currentLocation), zoomMode: \(isZoomMode)", category: .ui)
+            Logger.shared.debug("Pan gesture - state: \(gesture.state.rawValue) [\(self.gestureStateName(gesture.state))], touches: \(numberOfTouches), location: \(currentLocation), zoomMode: \(isZoomMode)", category: .ui)
             
             // Check if this is a two-finger drag (scrolling or panning)
             if numberOfTouches == 2 {
@@ -509,43 +586,79 @@ extension CameraPreviewView {
             }
             
             // Handle single finger pan for mouse movement (only when not in zoom mode)
-            if numberOfTouches == 1 {
+            // NOTE: When gesture ends, numberOfTouches becomes 0, so we need to check for that
+            if numberOfTouches == 1 || (numberOfTouches == 0 && (gesture.state == .ended || gesture.state == .cancelled || gesture.state == .failed)) {
                 switch gesture.state {
                 case .began:
-                    Logger.shared.debug("Single-finger pan began at \(currentLocation)", category: .ui)
-                    panStartPosition = currentLocation
-                    // Reset drag state immediately and synchronously when a new gesture begins
-                    self.parent.mouseManager.resetDragState()
-                    // Call handleDragGesture to initialize positions
+                    // Use initial touch position if available (for Apple Pencil), otherwise use current location
+                    let startLocation = initialTouchPosition ?? currentLocation
+                    Logger.shared.debug("Single-finger pan began at \(currentLocation), using start: \(startLocation)", category: .ui)
+                    panStartPosition = startLocation
+                    lastTouchLocation = currentLocation
+                    
+                    // Clear the initial touch position now that we've used it
+                    initialTouchPosition = nil
+                    
+                    // Update view bounds for absolute mode coordinate normalization
+                    if let view = gesture.view {
+                        self.parent.mouseManager.updateViewBounds(view.bounds)
+                    }
+                    
+                    // NOTE: Don't call resetDragState() here!
+                    // The previous gesture's handleDragEnded() already reset the state.
+                    // Calling it again could interfere with the timing of the release packets.
+                    
+                    // Call handleDragGesture to initialize positions for new drag
                     self.parent.mouseManager.handleDragGesture(
-                        start: currentLocation,
+                        start: startLocation,
                         current: currentLocation,
                         end: nil
                     )
                     
+                    // Start polling-based drag end detection as fallback
+                    self.startDragEndMonitoring()
+                    
                 case .changed:
-                    Logger.shared.debug("Single-finger pan changed", category: .ui)
-                    // Move mouse handling to background queue to prevent UI blocking
-                    DispatchQueue.global(qos: .userInteractive).async {
-                        self.parent.mouseManager.handleDragGesture(
-                            start: self.panStartPosition,
-                            current: currentLocation,
-                            end: nil
-                        )
-                    }
+                    Logger.shared.debug("Single-finger pan changed to location: \(currentLocation)", category: .ui)
+                    lastTouchLocation = currentLocation
+                    // Call handleDragGesture directly (not async) to maintain proper event ordering
+                    self.parent.mouseManager.handleDragGesture(
+                        start: self.panStartPosition,
+                        current: currentLocation,
+                        end: nil
+                    )
                     
                 case .ended, .cancelled:
-                    Logger.shared.debug("Single-finger pan ended/cancelled", category: .ui)
-                    DispatchQueue.global(qos: .userInteractive).async {
-                        self.parent.mouseManager.handleDragGesture(
-                            start: self.panStartPosition,
-                            current: currentLocation,
-                            end: currentLocation
-                        )
-                    }
+                    Logger.shared.debug("Single-finger pan ended/cancelled at location: \(currentLocation), state: \(self.gestureStateName(gesture.state))", category: .ui)
+                    
+                    // Stop polling timer since we got the end event
+                    self.stopDragEndMonitoring()
+                    
+                    // Call handleDragGesture directly (not async) to ensure end event is processed
+                    self.parent.mouseManager.handleDragGesture(
+                        start: self.panStartPosition,
+                        current: currentLocation,
+                        end: currentLocation
+                    )
+                    Logger.shared.debug("Single-finger pan - handleDragGesture called with end position", category: .ui)
+                    panStartPosition = .zero
+                
+                case .failed:
+                    Logger.shared.debug("Single-finger pan FAILED - cleaning up drag state", category: .ui)
+                    
+                    // Stop polling timer
+                    self.stopDragEndMonitoring()
+                    
+                    // If gesture failed, we should still end the drag
+                    self.parent.mouseManager.handleDragGesture(
+                        start: self.panStartPosition,
+                        current: currentLocation,
+                        end: currentLocation
+                    )
                     panStartPosition = .zero
                     
                 default:
+                    Logger.shared.debug("Single-finger pan - unhandled state: \(self.gestureStateName(gesture.state))", category: .ui)
                     break
                 }
             }
@@ -869,6 +982,8 @@ extension CameraPreviewView {
         
         deinit {
             NotificationCenter.default.removeObserver(self)
+            dragEndCheckTimer?.invalidate()
+            dragEndCheckTimer = nil
         }
         
         // MARK: - UIGestureRecognizerDelegate
@@ -880,6 +995,107 @@ extension CameraPreviewView {
             }
             
             return false
+        }
+    }
+}
+
+// MARK: - Touch-Enabled View for Apple Pencil Support
+/// Custom UIView that captures all touch events including coalesced touches from Apple Pencil
+/// This ensures smooth drawing by processing all intermediate points that UIGestureRecognizer might miss
+class TouchEnabledView: UIView {
+    weak var coordinator: CameraPreviewView.Coordinator?
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // Always call super first to allow gesture recognizers to work
+        super.touchesBegan(touches, with: event)
+        
+        // Capture the initial touch position for Apple Pencil
+        if let touch = touches.first,
+           let coordinator = coordinator {
+            let location = touch.location(in: self)
+            
+            // Store the initial touch position - this will be used when the pan gesture recognizes
+            coordinator.initialTouchPosition = location
+            
+            Logger.shared.debug("[Apple Pencil] touchesBegan at \(location), pencil: \(touch.type == .pencil)", category: .ui)
+        }
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // Always call super first to allow gesture recognizers to work
+        super.touchesMoved(touches, with: event)
+        
+        guard let touch = touches.first,
+              let coordinator = coordinator,
+              let event = event,
+              coordinator.parent.mouseManager.isAbsoluteMode && !coordinator.parent.appCoordinator.isZoomMode else {
+            return
+        }
+        
+        // Check if this is an Apple Pencil touch - they generate coalesced touches
+        let isPencil = touch.type == .pencil
+        
+        // Only process Apple Pencil touches - finger touches are handled by gesture recognizer alone
+        guard isPencil else { return }
+        
+        // CRITICAL: Only process coalesced touches if we're actually in a drag
+        // If panStartPosition is zero, the gesture hasn't begun yet - let it initialize first
+        guard coordinator.panStartPosition != .zero else {
+            Logger.shared.debug("[Apple Pencil] touchesMoved called before gesture began - skipping coalesced touch processing", category: .ui)
+            return
+        }
+        
+        // Get all coalesced touches - these are the intermediate points that happened between frames
+        let coalescedTouches = event.coalescedTouches(for: touch) ?? [touch]
+        
+        Logger.shared.debug("[Apple Pencil] touchesMoved - coalesced touches: \(coalescedTouches.count)", category: .ui)
+        
+        // Process coalesced touches ONLY if there are multiple points (meaning we have intermediate data)
+        // If there's only 1 touch, let the gesture recognizer handle it to avoid duplicate events
+        if coalescedTouches.count > 1 {
+            // Process all but the last coalesced touch (the last one will be handled by gesture recognizer)
+            for coalescedTouch in coalescedTouches.dropLast() {
+                let location = coalescedTouch.location(in: self)
+                
+                // Send each coalesced point directly to the mouse manager
+                // This captures the intermediate points that gesture recognizer misses
+                coordinator.parent.mouseManager.handleDragGesture(
+                    start: coordinator.panStartPosition,
+                    current: location,
+                    end: nil
+                )
+                
+                Logger.shared.debug("[Apple Pencil] Processing coalesced point: \(location)", category: .ui)
+            }
+            
+            // Update last touch location for polling (use the last coalesced touch)
+            if let lastTouch = coalescedTouches.last {
+                coordinator.lastTouchLocation = lastTouch.location(in: self)
+            }
+        }
+        // The last touch (or the only touch) will be handled by the gesture recognizer
+        // This ensures we don't duplicate events and the gesture state machine works correctly
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // Always call super first to allow gesture recognizers to work
+        super.touchesEnded(touches, with: event)
+        
+        // Just log for debugging - gesture recognizer handles the actual end event
+        if let touch = touches.first {
+            let location = touch.location(in: self)
+            Logger.shared.debug("[Apple Pencil] touchesEnded at \(location), pencil: \(touch.type == .pencil)", category: .ui)
+        }
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // Always call super first to allow gesture recognizers to work
+        super.touchesCancelled(touches, with: event)
+        
+        // Just log for debugging
+        if let touch = touches.first {
+            let location = touch.location(in: self)
+            Logger.shared.debug("[Apple Pencil] touchesCancelled at \(location)", category: .ui)
         }
     }
 }

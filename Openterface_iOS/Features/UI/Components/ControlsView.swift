@@ -150,7 +150,17 @@ struct ControlsView: View {
                     isActive: appCoordinator.isZoomMode
                 )
 
-                // 7.5. Fullscreen Button
+                // 7.5. Mouse Mode Button (Pan/iPencil)
+                ControlButton(
+                    icon: appCoordinator.isPencilMode ? "pencil.tip" : "hand.draw.fill",
+                    label: appCoordinator.isPencilMode ? "iPencil" : "Pan",
+                    action: {
+                        appCoordinator.toggleMouseMode()
+                    },
+                    isActive: appCoordinator.isPencilMode
+                )
+
+                // 7.6. Fullscreen Button
                 ControlButton(
                     icon: "arrow.up.left.and.arrow.down.right",
                     label: "Fullscreen",
