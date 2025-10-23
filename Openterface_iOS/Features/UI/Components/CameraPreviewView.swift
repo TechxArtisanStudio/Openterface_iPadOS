@@ -866,6 +866,14 @@ extension CameraPreviewView {
             
             let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             
+            // Left Click action
+            let leftClickAction = UIAlertAction(title: "Left Click", style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                Logger.shared.debug("Left Click selected from menu", category: .ui)
+                self.parent.mouseManager.handleLeftClick(at: location)
+            }
+            alertController.addAction(leftClickAction)
+            
             // Right Click action
             let rightClickAction = UIAlertAction(title: "Right Click", style: .default) { [weak self] _ in
                 guard let self = self else { return }

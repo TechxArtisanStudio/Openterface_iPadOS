@@ -670,6 +670,23 @@ extension MouseInputManager {
         logger.info("Right click detected - sending right click event", category: .mouse)
     }
     
+    func handleLeftClick(at position: CGPoint) {
+        logger.debug("handleLeftClick called at position: \(position), mode: \(isAbsoluteMode ? "Absolute" : "Relative")", category: .mouse)
+        
+        // In absolute mode, move cursor to position first
+        if isAbsoluteMode {
+            moveMouseToPosition(position)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+                self?.handleClick()
+            }
+        } else {
+            // In relative mode, just left click at current position
+            handleClick()
+        }
+        
+        logger.info("Left click detected - sending left click event", category: .mouse)
+    }
+    
     /// Handle two-finger tap with direction-based scrolling
     /// 
     /// **Both Modes:** Two-finger drag (vertical/horizontal) → Scroll wheel
