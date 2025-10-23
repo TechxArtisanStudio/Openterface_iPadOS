@@ -818,15 +818,17 @@ extension CameraPreviewView {
                 return
             }
             
-            Logger.shared.debug("Double tap gesture detected", category: .ui)
+            let location = gesture.location(in: gesture.view)
+            Logger.shared.debug("Double tap gesture detected at location: \(location)", category: .ui)
             
             // If in drag mode, exit it; otherwise send click event
             if parent.mouseManager.isSelectMode {
                 Logger.shared.debug("Exiting drag mode via double tap", category: .ui)
                 parent.mouseManager.exitDraggingMode()
             } else {
-                Logger.shared.debug("Sending click event via double tap", category: .ui)
-                parent.mouseManager.handleClick()
+                Logger.shared.debug("Sending click event via double tap at location: \(location)", category: .ui)
+                // Use handleLeftClick which respects the mode and position
+                parent.mouseManager.handleLeftClick(at: location)
             }
         }
         

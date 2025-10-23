@@ -25,10 +25,35 @@ final class HIDInputManager {
     private let connectionManager: any ConnectionProtocol
     private let logger = Logger.shared
     
+    // MARK: - Mouse Mode
+    
+    /// Mouse control mode
+    enum MouseMode {
+        case relative  // Touchpad-style (pan gestures)
+        case absolute  // Direct touch/Apple Pencil
+    }
+    
+    private var currentMouseMode: MouseMode = .relative
+    private var lastAbsolutePosition: (x: CGFloat, y: CGFloat) = (0.5, 0.5)
+    
     // MARK: - Initialization
     init(connectionManager: any ConnectionProtocol) {
         self.connectionManager = connectionManager
         logger.debug("HIDInputManager initialized", category: .input)
+    }
+    
+    // MARK: - Mode Management
+    
+    /// Set the current mouse control mode
+    /// - Parameter mode: The mouse mode to use (.relative for pan/trackpad, .absolute for pencil/direct touch)
+    func setMouseMode(_ mode: MouseMode) {
+        currentMouseMode = mode
+        logger.debug("Mouse mode changed to: \(mode)", category: .input)
+    }
+    
+    /// Get the current mouse mode
+    func getMouseMode() -> MouseMode {
+        return currentMouseMode
     }
     
     // MARK: - Keyboard Input
@@ -110,6 +135,9 @@ final class HIDInputManager {
     ///   - buttons: Button state (Bit0=left, Bit1=right, Bit2=middle)
     ///   - wheel: Scroll wheel delta (0x01-0x7F=up, 0x81-0xFF=down, 0x00=no scroll)
     func sendAbsoluteMouseInput(x: CGFloat, y: CGFloat, buttons: UInt8 = 0x00, wheel: Int = 0) {
+        // Store position for future click operations
+        lastAbsolutePosition = (x, y)
+        
         // HID absolute mouse report format (CMD_SEND_MS_ABS_DATA):
         // [0x57, 0xAB, 0x00, 0x04, 0x07, 0x02, Buttons, X-Low, X-High, Y-Low, Y-High, Wheel, Checksum]
         // 
@@ -189,29 +217,45 @@ final class HIDInputManager {
     
     // MARK: - Mouse Buttons
     
-    /// Send mouse click (press and release)
+    /// Send mouse click (press and release) - respects current mode
     /// - Parameters:
     ///   - button: Button to click (0x01=left, 0x02=right, 0x04=middle)
     ///   - releaseDelay: Delay before releasing the button (in seconds)
-    func sendMouseClick(button: UInt8 = 0x01, releaseDelay: TimeInterval = 0.05) {
-        // Press
-        sendRelativeMouseInput(deltaX: 0, deltaY: 0, buttons: button, wheel: 0)
-        
-        // Release after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + releaseDelay) {
-            self.sendRelativeMouseInput(deltaX: 0, deltaY: 0, buttons: 0x00, wheel: 0)
+    ///   - position: Optional position for absolute mode (uses last position if nil)
+    func sendMouseClick(button: UInt8 = 0x01, releaseDelay: TimeInterval = 0.05, position: (x: CGFloat, y: CGFloat)? = nil) {
+        switch currentMouseMode {
+        case .relative:
+            // Press
+            sendRelativeMouseInput(deltaX: 0, deltaY: 0, buttons: button, wheel: 0)
+            
+            // Release after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + releaseDelay) {
+                self.sendRelativeMouseInput(deltaX: 0, deltaY: 0, buttons: 0x00, wheel: 0)
+            }
+            
+        case .absolute:
+            let pos = position ?? lastAbsolutePosition
+            // Press
+            sendAbsoluteMouseInput(x: pos.x, y: pos.y, buttons: button, wheel: 0)
+            
+            // Release after delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + releaseDelay) {
+                self.sendAbsoluteMouseInput(x: pos.x, y: pos.y, buttons: 0x00, wheel: 0)
+            }
         }
     }
     
-    /// Send double click
-    /// - Parameter button: Button to double click (0x01=left, 0x02=right, 0x04=middle)
-    func sendMouseDoubleClick(button: UInt8 = 0x01) {
+    /// Send double click - respects current mode
+    /// - Parameters:
+    ///   - button: Button to double click (0x01=left, 0x02=right, 0x04=middle)
+    ///   - position: Optional position for absolute mode (uses last position if nil)
+    func sendMouseDoubleClick(button: UInt8 = 0x01, position: (x: CGFloat, y: CGFloat)? = nil) {
         // First click
-        sendMouseClick(button: button, releaseDelay: 0.05)
+        sendMouseClick(button: button, releaseDelay: 0.05, position: position)
         
         // Second click after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.sendMouseClick(button: button, releaseDelay: 0.05)
+            self.sendMouseClick(button: button, releaseDelay: 0.05, position: position)
         }
     }
     

@@ -91,6 +91,11 @@ final class MouseInputManager: ObservableObject {
     func setAbsoluteMode(_ enabled: Bool) {
         DispatchQueue.main.async {
             self.isAbsoluteMode = enabled
+            
+            // Sync mode with HIDInputManager
+            let hidMode: HIDInputManager.MouseMode = enabled ? .absolute : .relative
+            self.hidInputManager.setMouseMode(hidMode)
+            
             self.logger.debug("Mouse mode set to: \(enabled ? "Absolute (Direct Touch)" : "Relative (Touchpad)")", category: .mouse)
         }
     }
@@ -110,6 +115,28 @@ final class MouseInputManager: ObservableObject {
     }
     
     // MARK: - Helper Methods
+    
+    /// Normalize pixel coordinates to 0.0-1.0 range for absolute mouse mode
+    /// - Parameter position: Pixel position in view coordinates
+    /// - Returns: Normalized (x, y) tuple in range 0.0-1.0
+    private func normalizeCoordinates(_ position: CGPoint) -> (x: CGFloat, y: CGFloat) {
+        var normalizedX: CGFloat = 0.5
+        var normalizedY: CGFloat = 0.5
+        
+        // Prioritize video rect for normalization (more accurate)
+        if videoRect.width > 0 && videoRect.height > 0 {
+            normalizedX = max(0.0, min(1.0, (position.x - videoRect.origin.x) / videoRect.width))
+            normalizedY = max(0.0, min(1.0, (position.y - videoRect.origin.y) / videoRect.height))
+        } else if viewBounds.width > 0 && viewBounds.height > 0 {
+            // Fallback to view bounds
+            normalizedX = max(0.0, min(1.0, position.x / viewBounds.width))
+            normalizedY = max(0.0, min(1.0, position.y / viewBounds.height))
+        } else {
+            logger.warning("Neither video rect nor view bounds set for coordinate normalization, using center (0.5, 0.5)", category: .mouse)
+        }
+        
+        return (normalizedX, normalizedY)
+    }
     
     /// Check if movement exceeds threshold to distinguish click from drag
     /// - Parameters:
@@ -134,17 +161,18 @@ final class MouseInputManager: ObservableObject {
     ///   - position: Optional position for absolute mode (if nil, uses currentPosition or center)
     ///   - wheel: Scroll wheel delta
     private func sendMouseButtonState(buttons: UInt8, position: CGPoint? = nil, wheel: Int = 0) {
+        // Ensure HIDInputManager is in the correct mode before sending
+        let requiredMode: HIDInputManager.MouseMode = isAbsoluteMode ? .absolute : .relative
+        if hidInputManager.getMouseMode() != requiredMode {
+            hidInputManager.setMouseMode(requiredMode)
+        }
+        
         if isAbsoluteMode {
             // Absolute mode: send position along with button state
             let posToUse = position ?? currentPosition ?? CGPoint(x: viewBounds.width / 2, y: viewBounds.height / 2)
-            var normalizedX: CGFloat = 0.5
-            var normalizedY: CGFloat = 0.5
+            let (normalizedX, normalizedY) = normalizeCoordinates(posToUse)
             
-            if viewBounds.width > 0 && viewBounds.height > 0 {
-                normalizedX = max(0.0, min(1.0, posToUse.x / viewBounds.width))
-                normalizedY = max(0.0, min(1.0, posToUse.y / viewBounds.height))
-            }
-            
+            logger.debug("sendMouseButtonState - pos: \(posToUse) -> norm(\(normalizedX), \(normalizedY)), buttons: 0x\(String(buttons, radix: 16))", category: .mouse)
             hidInputManager.sendAbsoluteMouseInput(x: normalizedX, y: normalizedY, buttons: buttons, wheel: wheel)
         } else {
             // Relative mode: send zero delta with button state
@@ -162,6 +190,11 @@ final class MouseInputManager: ObservableObject {
     }
     
     private func handleRelativeMode(currentPosition: CGPoint) {
+        // Ensure HIDInputManager is in relative mode
+        if hidInputManager.getMouseMode() != .relative {
+            hidInputManager.setMouseMode(.relative)
+        }
+        
         var xDelta = Int(currentPosition.x - (previousPosition?.x ?? currentPosition.x))
         var yDelta = Int(currentPosition.y - (previousPosition?.y ?? currentPosition.y))
         
@@ -180,6 +213,11 @@ final class MouseInputManager: ObservableObject {
     }
     
     private func handleAbsoluteMode(currentPosition: CGPoint) {
+        // Ensure HIDInputManager is in absolute mode
+        if hidInputManager.getMouseMode() != .absolute {
+            hidInputManager.setMouseMode(.absolute)
+        }
+        
         // Update positions on main thread to avoid UI update issues
         DispatchQueue.main.async {
             self.currentPosition = currentPosition
@@ -192,23 +230,10 @@ final class MouseInputManager: ObservableObject {
         
         logger.debug("handleAbsoluteMode: isDragInProgress=\(isDragInProgress), buttons=\(mouseButtons)", category: .mouse)
         
-        // Normalize coordinates from view pixel space to 0.0-1.0 range
-        var normalizedX: CGFloat = 0.5
-        var normalizedY: CGFloat = 0.5
+        // Normalize coordinates using the centralized helper
+        let (normalizedX, normalizedY) = normalizeCoordinates(currentPosition)
         
-        if videoRect.width > 0 && videoRect.height > 0 {
-            // Normalize based on video rect
-            normalizedX = max(0.0, min(1.0, (currentPosition.x - videoRect.origin.x) / videoRect.width))
-            normalizedY = max(0.0, min(1.0, (currentPosition.y - videoRect.origin.y) / videoRect.height))
-            logger.debug("Using video rect: \(videoRect), Normalized coords: pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
-        } else if viewBounds.width > 0 && viewBounds.height > 0 {
-            // Fallback to view bounds
-            normalizedX = max(0.0, min(1.0, currentPosition.x / viewBounds.width))
-            normalizedY = max(0.0, min(1.0, currentPosition.y / viewBounds.height))
-            logger.debug("Using view bounds: \(viewBounds), Normalized coords: pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
-        } else {
-            logger.warning("Neither video rect nor view bounds set for absolute mode, using center position", category: .mouse)
-        }
+        logger.debug("handleAbsoluteMode - pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
         
         // Use HIDInputManager for sending absolute mouse data
         // Send button state based on drag progress: 0x01 during drag, 0x00 otherwise
@@ -224,13 +249,11 @@ final class MouseInputManager: ObservableObject {
         
         if isAbsoluteMode, let position = endPosition {
             logger.debug("iPencil mode: Ending drag at position: \(position)", category: .mouse)
-            var normalizedX: CGFloat = 0.5
-            var normalizedY: CGFloat = 0.5
             
-            if viewBounds.width > 0 && viewBounds.height > 0 {
-                normalizedX = max(0.0, min(1.0, position.x / viewBounds.width))
-                normalizedY = max(0.0, min(1.0, position.y / viewBounds.height))
-            }
+            // Normalize coordinates using the centralized helper
+            let (normalizedX, normalizedY) = normalizeCoordinates(position)
+            
+            logger.debug("handleDragEnded - pixel(\(position.x), \(position.y)) -> norm(\(normalizedX), \(normalizedY))", category: .mouse)
             
             // CRITICAL: Send final position with button STILL PRESSED (0x01) first
             // Some systems need to see the pressed state at the final position before the release
@@ -588,26 +611,15 @@ extension MouseInputManager {
     
     /// Move mouse cursor to absolute position (iPencil mode only)
     private func moveMouseToPosition(_ position: CGPoint) {
-        var normalizedX: CGFloat = 0.5
-        var normalizedY: CGFloat = 0.5
-        
-        if viewBounds.width > 0 && viewBounds.height > 0 {
-            normalizedX = max(0.0, min(1.0, position.x / viewBounds.width))
-            normalizedY = max(0.0, min(1.0, position.y / viewBounds.height))
-        }
-        
+        let (normalizedX, normalizedY) = normalizeCoordinates(position)
+        logger.debug("moveMouseToPosition - pixel(\(position.x), \(position.y)) -> norm(\(normalizedX), \(normalizedY))", category: .mouse)
         hidInputManager.sendAbsoluteMouseInput(x: normalizedX, y: normalizedY, buttons: 0x00, wheel: 0)
     }
     
     /// Click at absolute position (iPencil mode only)
     private func clickAtPosition(_ position: CGPoint) {
-        var normalizedX: CGFloat = 0.5
-        var normalizedY: CGFloat = 0.5
-        
-        if viewBounds.width > 0 && viewBounds.height > 0 {
-            normalizedX = max(0.0, min(1.0, position.x / viewBounds.width))
-            normalizedY = max(0.0, min(1.0, position.y / viewBounds.height))
-        }
+        let (normalizedX, normalizedY) = normalizeCoordinates(position)
+        logger.debug("clickAtPosition - pixel(\(position.x), \(position.y)) -> norm(\(normalizedX), \(normalizedY))", category: .mouse)
         
         // Move to position, press, release
         hidInputManager.sendAbsoluteMouseInput(x: normalizedX, y: normalizedY, buttons: 0x00, wheel: 0)
@@ -621,13 +633,8 @@ extension MouseInputManager {
     
     /// Double click at absolute position (iPencil mode only)
     private func doubleClickAtPosition(_ position: CGPoint) {
-        var normalizedX: CGFloat = 0.5
-        var normalizedY: CGFloat = 0.5
-        
-        if viewBounds.width > 0 && viewBounds.height > 0 {
-            normalizedX = max(0.0, min(1.0, position.x / viewBounds.width))
-            normalizedY = max(0.0, min(1.0, position.y / viewBounds.height))
-        }
+        let (normalizedX, normalizedY) = normalizeCoordinates(position)
+        logger.debug("doubleClickAtPosition - pixel(\(position.x), \(position.y)) -> norm(\(normalizedX), \(normalizedY))", category: .mouse)
         
         // Move to position
         hidInputManager.sendAbsoluteMouseInput(x: normalizedX, y: normalizedY, buttons: 0x00, wheel: 0)
