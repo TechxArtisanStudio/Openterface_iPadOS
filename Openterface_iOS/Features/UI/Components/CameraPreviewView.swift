@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVFoundation
+import CoreMedia
 import UIKit
 
 struct CameraPreviewView: UIViewRepresentable {
@@ -468,6 +469,26 @@ extension CameraPreviewView {
             }
         }
         
+        // Helper to calculate the video content rect within the view
+        private func calculateVideoRect(in view: UIView) -> CGRect {
+            let viewBounds = view.bounds
+            
+            // Try to get actual video dimensions from the preview layer
+            var videoSize = CGSize(width: 16, height: 9) // Default 16:9
+            if let previewLayer = self.previewLayer,
+               let connection = previewLayer.connection,
+               let inputPort = connection.inputPorts.first,
+               let formatDescription = inputPort.formatDescription {
+                let dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription)
+                videoSize = CGSize(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height))
+                Logger.shared.debug("Got video dimensions from format: \(dimensions.width)x\(dimensions.height)", category: .ui)
+            } else {
+                Logger.shared.debug("Using default 16:9 aspect ratio for video rect", category: .ui)
+            }
+            
+            return AVMakeRect(aspectRatio: videoSize, insideRect: viewBounds)
+        }
+        
         // Start monitoring for drag end using polling
         private func startDragEndMonitoring() {
             Logger.shared.debug("Starting drag end monitoring timer", category: .ui)
@@ -602,6 +623,8 @@ extension CameraPreviewView {
                     // Update view bounds for absolute mode coordinate normalization
                     if let view = gesture.view {
                         self.parent.mouseManager.updateViewBounds(view.bounds)
+                        let videoRect = self.calculateVideoRect(in: view)
+                        self.parent.mouseManager.updateVideoRect(videoRect)
                     }
                     
                     // NOTE: Don't call resetDragState() here!

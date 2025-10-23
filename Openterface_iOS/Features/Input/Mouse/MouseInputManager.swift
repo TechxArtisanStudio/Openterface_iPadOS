@@ -62,6 +62,7 @@ final class MouseInputManager: ObservableObject {
     
     // View bounds for coordinate normalization
     private var viewBounds: CGRect = .zero
+    private var videoRect: CGRect = .zero
     
     // MARK: - Initialization
     init(connectionManager: any ConnectionProtocol) {
@@ -99,6 +100,13 @@ final class MouseInputManager: ObservableObject {
     func updateViewBounds(_ bounds: CGRect) {
         viewBounds = bounds
         logger.debug("View bounds updated: \(bounds)", category: .mouse)
+    }
+    
+    /// Update video rect for absolute mode coordinate normalization
+    /// - Parameter rect: The rect of the video content within the view
+    func updateVideoRect(_ rect: CGRect) {
+        videoRect = rect
+        logger.debug("Video rect updated: \(rect)", category: .mouse)
     }
     
     // MARK: - Helper Methods
@@ -188,13 +196,18 @@ final class MouseInputManager: ObservableObject {
         var normalizedX: CGFloat = 0.5
         var normalizedY: CGFloat = 0.5
         
-        if viewBounds.width > 0 && viewBounds.height > 0 {
-            // Normalize based on actual view bounds
+        if videoRect.width > 0 && videoRect.height > 0 {
+            // Normalize based on video rect
+            normalizedX = max(0.0, min(1.0, (currentPosition.x - videoRect.origin.x) / videoRect.width))
+            normalizedY = max(0.0, min(1.0, (currentPosition.y - videoRect.origin.y) / videoRect.height))
+            logger.debug("Using video rect: \(videoRect), Normalized coords: pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
+        } else if viewBounds.width > 0 && viewBounds.height > 0 {
+            // Fallback to view bounds
             normalizedX = max(0.0, min(1.0, currentPosition.x / viewBounds.width))
             normalizedY = max(0.0, min(1.0, currentPosition.y / viewBounds.height))
-            logger.debug("Normalized coords: pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
+            logger.debug("Using view bounds: \(viewBounds), Normalized coords: pixel(\(currentPosition.x), \(currentPosition.y)) -> norm(\(normalizedX), \(normalizedY)), buttons: \(mouseButtons)", category: .mouse)
         } else {
-            logger.warning("View bounds not set for absolute mode, using center position", category: .mouse)
+            logger.warning("Neither video rect nor view bounds set for absolute mode, using center position", category: .mouse)
         }
         
         // Use HIDInputManager for sending absolute mouse data
