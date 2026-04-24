@@ -179,6 +179,15 @@ struct ControlsView: View {
                     }
                 )
 
+                // 8.5. Info Button
+                ControlButton(
+                    icon: "info.circle.fill",
+                    label: "Info",
+                    action: {
+                        appCoordinator.showInfoOverlay.toggle()
+                    },
+                    isActive: appCoordinator.showInfoOverlay
+                )
                 
                 Spacer()
 

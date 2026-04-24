@@ -7,7 +7,6 @@
 
 import Foundation
 import AVFoundation
-import UIKit
 import Photos
 import Combine
 import VideoToolbox

@@ -8,7 +8,6 @@
 import Foundation
 import AVFoundation
 import Combine
-import UIKit
 
 final class CameraSessionManager: NSObject, ObservableObject {
     // MARK: - Sub-managers

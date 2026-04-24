@@ -8,7 +8,6 @@
 import SwiftUI
 import AVFoundation
 import CoreMedia
-import UIKit
 
 struct CameraPreviewView: UIViewRepresentable {
     @ObservedObject var cameraManager: CameraSessionManager

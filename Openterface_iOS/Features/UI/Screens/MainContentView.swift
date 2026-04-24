@@ -179,6 +179,19 @@ struct MainContentView: View {
                 )
                 .animation(.spring(response: 0.3), value: appCoordinator.showFloatingKeyboard)
             }
+            
+            // Info Overlay (top-right corner)
+            if appCoordinator.showInfoOverlay {
+                VStack {
+                    HStack {
+                        Spacer()
+                        InfoOverlayView(appCoordinator: appCoordinator)
+                    }
+                    Spacer()
+                }
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+                .animation(.spring(response: 0.3), value: appCoordinator.showInfoOverlay)
+            }
         }
         .background {
             // External Bluetooth Keyboard Handler

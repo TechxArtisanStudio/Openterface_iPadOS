@@ -286,7 +286,8 @@ final class MouseInputManager: ObservableObject {
         lastProcessedDragPosition = .zero  // Reset deduplication state
         internalPreviousPosition = .zero  // Reset internal tracking
         DispatchQueue.main.async {
-            self.currentPosition = nil
+            // Keep currentPosition to show last known position in UI
+            // self.currentPosition = nil
             self.previousPosition = nil
             self.isSelectMode = false
         }
@@ -398,7 +399,8 @@ extension MouseInputManager: MouseInputProtocol {
         lastProcessedDragPosition = .zero
         internalPreviousPosition = .zero
         DispatchQueue.main.async {
-            self.currentPosition = nil
+            // Keep currentPosition to show last known position in UI
+            // self.currentPosition = nil
             self.previousPosition = nil
         }
         logger.debug("Drag state reset", category: .mouse)
@@ -464,7 +466,7 @@ extension MouseInputManager: MouseInputProtocol {
             }
             
             // Update last processed position for deduplication (relative mode only)
-            if !self.isAbsoluteMode {
+if !self.isAbsoluteMode {
                 self.lastProcessedDragPosition = current
             }
             
@@ -495,7 +497,7 @@ extension MouseInputManager: MouseInputProtocol {
                 let boundedYDelta = max(-127, min(127, yDelta))
                 let xDirection = boundedXDelta >= 0 ? boundedXDelta : (0x100 + boundedXDelta)
                 let yDirection = boundedYDelta >= 0 ? boundedYDelta : (0x100 + boundedYDelta)
-                var dataPacket: [UInt8] = [0x57, 0xAB, 0x00, 0x05, 0x05, 0x01, UInt8(mousePressed), UInt8(xDirection), UInt8(yDirection), UInt8(wheelMove)]
+                            var dataPacket: [UInt8] = [0x57, 0xAB, 0x00, 0x05, 0x05, 0x01, UInt8(mousePressed), UInt8(xDirection), UInt8(yDirection), UInt8(wheelMove)]
                 let sum = dataPacket.reduce(0 as UInt32, { $0 + UInt32($1) }) & 0xFF
                 dataPacket.append(UInt8(sum))
                 self.logger.debug("Sending movement packet - xDir: \(xDirection), yDir: \(yDirection)", category: .mouse)
@@ -796,7 +798,8 @@ extension MouseInputManager {
         lastProcessedDragPosition = .zero
         internalPreviousPosition = .zero
         DispatchQueue.main.async {
-            self.currentPosition = nil
+            // Keep currentPosition to show last known position in UI
+            // self.currentPosition = nil
             self.previousPosition = nil
             self.isSelectMode = false
             self.isTwoFingerScrolling = false

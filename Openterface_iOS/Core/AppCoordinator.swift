@@ -27,6 +27,7 @@ final class AppCoordinator: ObservableObject {
     @Published var isZoomMode = false
     @Published var isFullScreen = false
     @Published var isPencilMode = false // false = Pan mode (relative), true = iPencil mode (absolute)
+    @Published var showInfoOverlay = false
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
