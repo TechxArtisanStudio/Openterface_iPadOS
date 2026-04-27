@@ -33,7 +33,7 @@ final class CameraSessionManager: NSObject, ObservableObject {
     @Published var hasNewAudioDeviceDetected = false
     
     // Orientation correction for external cameras
-    @Published var orientationCorrectionMode: OrientationCorrectionMode = .normal
+    @Published var orientationCorrectionMode: OrientationCorrectionMode = .counterClockwise90
     
     // Zoom properties
     @Published var currentZoomFactor: CGFloat = 1.0
@@ -280,6 +280,11 @@ extension CameraSessionManager {
         videoManager.updateViewportPosition(translation, viewBounds: viewBounds)
     }
     
+    /// Set viewport position directly (for absolute touch tracking)
+    func setViewportPosition(_ position: CGPoint, viewBounds: CGRect) {
+        videoManager.setViewportPosition(position, viewBounds: viewBounds)
+    }
+
     /// Reset viewport position to center
     func resetViewport() {
         videoManager.resetViewport()

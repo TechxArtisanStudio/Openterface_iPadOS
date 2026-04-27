@@ -28,7 +28,7 @@ final class VideoManager: NSObject, ObservableObject, CameraManagementProtocol, 
     @Published var hasNewAudioDeviceDetected = false
 
     // Orientation correction for external cameras
-    @Published var orientationCorrectionMode: OrientationCorrectionMode = .normal
+    @Published var orientationCorrectionMode: OrientationCorrectionMode = .counterClockwise90
 
     // Zoom properties
     @Published var currentZoomFactor: CGFloat = 1.0
@@ -154,7 +154,7 @@ final class VideoManager: NSObject, ObservableObject, CameraManagementProtocol, 
 
         // Create a new preview layer each time to avoid reuse issues
         let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.videoGravity = .resizeAspect
 
         print("🏗️ Created AVCaptureVideoPreviewLayer")
         print("  - Video gravity: \(previewLayer.videoGravity)")
@@ -419,7 +419,10 @@ extension VideoManager {
             return
         }
 
-        sessionState = .starting
+        // Defer @Published update to avoid "Publishing changes from within view updates"
+        DispatchQueue.main.async { [weak self] in
+            self?.sessionState = .starting
+        }
         
         #if targetEnvironment(simulator)
         // In simulator mode, we don't have a real capture session
@@ -781,24 +784,9 @@ extension VideoManager {
         }
         print("🔍 Updated currentZoomFactor from \(oldZoom) to \(self.currentZoomFactor)")
 
-        // Then update the device
-        do {
-            try device.lockForConfiguration()
-            device.videoZoomFactor = clampedZoom
-            device.unlockForConfiguration()
-
-            print("🔍 Device zoom factor set to: \(clampedZoom)")
-        } catch {
-            print("❌ Failed to set device zoom factor: \(error)")
-            // If device update fails, revert the published property
-            if Thread.isMainThread {
-                self.currentZoomFactor = oldZoom
-            } else {
-                DispatchQueue.main.sync {
-                    self.currentZoomFactor = oldZoom
-                }
-            }
-        }
+        // Don't apply hardware zoom to the device — the preview layer transform
+        // handles zoom visually via CATransform3D, preserving full-resolution
+        // content for panning within the zoomed view.
     }
 
     /// Get the available zoom range for the current camera
@@ -843,20 +831,19 @@ extension VideoManager {
             return
         }
 
-        // Calculate maximum pan distance based on zoom level
-        // Allow panning the full zoomed area minus the view size
+        // The layer frame is viewBounds × zoomFactor, centered at (midX + viewport, midY + viewport).
+        // For resizeAspectFill, the valid pan range is half the layer excess:
+        //   maxPan = viewSize × (zoom - 1) / 2
         let zoomScale = currentZoomFactor
-        let maxPanX = viewBounds.width * (zoomScale - 1.0)
-        let maxPanY = viewBounds.height * (zoomScale - 1.0)
+        let maxPanX = viewBounds.width * (zoomScale - 1.0) / 2.0
+        let maxPanY = viewBounds.height * (zoomScale - 1.0) / 2.0
 
-        // Apply translation with adaptive sensitivity for smooth control
-        // Higher sensitivity for smaller zooms to make panning more responsive
-        let zoomDelta = max(0.1, zoomScale - 1.0)
-        let sensitivity: CGFloat = min(5.0, 2.0 / zoomDelta)
-        let newX = viewportPosition.x + translation.x * sensitivity
-        let newY = viewportPosition.y + translation.y * sensitivity
+        // Use 1:1 finger movement mapping — each delta maps directly to viewport
+        // since setTranslation(.zero) is called after each update
+        let newX = viewportPosition.x + translation.x
+        let newY = viewportPosition.y + translation.y
 
-        // Clamp the position to valid bounds
+        // Clamp the position to valid bounds (prevents showing black areas)
         let clampedX = max(-maxPanX, min(maxPanX, newX))
         let clampedY = max(-maxPanY, min(maxPanY, newY))
 
@@ -865,6 +852,24 @@ extension VideoManager {
         maxViewportOffset = CGPoint(x: maxPanX, y: maxPanY)
 
         print("🔍 Viewport updated - position: (\(clampedX), \(clampedY)), max: (\(maxPanX), \(maxPanY)), zoom: \(zoomScale)")
+    }
+
+    /// Set viewport position directly (for absolute touch tracking)
+    func setViewportPosition(_ position: CGPoint, viewBounds: CGRect) {
+        guard currentZoomFactor > 1.0 else {
+            viewportPosition = CGPoint.zero
+            return
+        }
+
+        let zoomScale = currentZoomFactor
+        let maxPanX = viewBounds.width * (zoomScale - 1.0) / 2.0
+        let maxPanY = viewBounds.height * (zoomScale - 1.0) / 2.0
+
+        let clampedX = max(-maxPanX, min(maxPanX, position.x))
+        let clampedY = max(-maxPanY, min(maxPanY, position.y))
+
+        viewportPosition = CGPoint(x: clampedX, y: clampedY)
+        maxViewportOffset = CGPoint(x: maxPanX, y: maxPanY)
     }
 
     /// Reset viewport position to center

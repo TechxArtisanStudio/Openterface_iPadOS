@@ -74,7 +74,9 @@ final class AudioManager: NSObject, ObservableObject, AudioManagementProtocol, D
         }
 
         if let audioDevice = audioDevices.first {
-            currentAudioDeviceName = audioDevice.localizedName
+            DispatchQueue.main.async { [weak self] in
+                self?.currentAudioDeviceName = audioDevice.localizedName
+            }
             print("✅ Audio device available: \(audioDevice.localizedName)")
         } else {
             print("❌ No audio devices found")

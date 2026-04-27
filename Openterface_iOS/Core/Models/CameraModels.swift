@@ -166,11 +166,33 @@ enum CameraSessionState: Equatable {
 
 /// Orientation correction mode for external cameras
 enum OrientationCorrectionMode: String, CaseIterable {
-    case normal = "Normal"
-    case inverted = "Inverted"
-    
+    case normal = "Normal"           // 0°
+    case clockwise90 = "90° CW"      // 90° clockwise
+    case inverted = "Inverted"       // 180°
+    case counterClockwise90 = "90° CCW" // 270° clockwise (90° counter-clockwise)
+
     var description: String {
         return self.rawValue
+    }
+
+    /// Rotation angle in degrees to apply to the captured image
+    var rotationAngle: CGFloat {
+        switch self {
+        case .normal: return 0
+        case .clockwise90: return 90
+        case .inverted: return 180
+        case .counterClockwise90: return 270
+        }
+    }
+
+    /// Offset to add to device orientation rotation
+    var previewAngleOffset: CGFloat {
+        switch self {
+        case .normal: return 0
+        case .clockwise90: return 90
+        case .inverted: return 180
+        case .counterClockwise90: return -90
+        }
     }
 }
 

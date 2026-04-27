@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import AVFoundation
 import Photos
 import Combine
@@ -56,7 +57,7 @@ final class RecordingManager: NSObject, ObservableObject {
     private weak var captureSession: AVCaptureSession?
     
     // Orientation correction mode
-    var orientationCorrectionMode: OrientationCorrectionMode = .normal
+    var orientationCorrectionMode: OrientationCorrectionMode = .counterClockwise90
     
     // Audio recording (separate capture session like macOS)
     private var audioCaptureSession: AVCaptureSession?
@@ -678,55 +679,56 @@ final class RecordingManager: NSObject, ObservableObject {
             // Fix orientation - use the ACTUAL pixel dimensions to detect landscape/portrait
             // UIImage.size is already EXIF-adjusted, but we need the raw pixel dimensions
             let correctedImage: UIImage
-            
+
             // Check if the ACTUAL pixels (cgImage) are landscape
             let isActuallyLandscape = cgImageWidth > cgImageHeight
-            
+
             if isActuallyLandscape {
                 // Camera captured landscape (e.g., 1920x1080)
-                // Ignore EXIF rotation - just force orientation to .up and apply user preference
-                Logger.shared.log("� Camera pixels are landscape (\(cgImageWidth)x\(cgImageHeight))", category: .camera)
-                
+                // Ignore EXIF rotation, force orientation to .up, apply user-selected rotation
+                Logger.shared.log("Landscape camera pixels (\(cgImageWidth)x\(cgImageHeight))", category: .camera)
+
                 if let cgImage = originalImage.cgImage {
-                    if orientationCorrectionMode == .inverted {
-                        // Apply 180° rotation for inverted mode
-                        Logger.shared.log("🔄 Applying 180° rotation for inverted mode", category: .camera)
-                        if let rotated = rotateImage(UIImage(cgImage: cgImage, scale: originalImage.scale, orientation: .up), by: 180) {
+                    let baseImage = UIImage(cgImage: cgImage, scale: originalImage.scale, orientation: .up)
+                    let angle = orientationCorrectionMode.rotationAngle
+                    if angle != 0 {
+                        Logger.shared.log("Applying \(angle)° rotation (\(orientationCorrectionMode.description))", category: .camera)
+                        if let rotated = rotateImage(baseImage, by: angle) {
                             correctedImage = rotated
-                            Logger.shared.log("✅ Image rotated 180° - New size: width=\(rotated.size.width), height=\(rotated.size.height)", category: .camera)
+                            Logger.shared.log("Image rotated - New size: width=\(rotated.size.width), height=\(rotated.size.height)", category: .camera)
                         } else {
-                            correctedImage = UIImage(cgImage: cgImage, scale: originalImage.scale, orientation: .up)
-                            Logger.shared.log("⚠️ Failed to rotate image, using original with forced .up orientation", level: .warning, category: .camera)
+                            correctedImage = baseImage
+                            Logger.shared.log("Failed to rotate image, using base", level: .warning, category: .camera)
                         }
                     } else {
-                        // Normal mode - save landscape as-is, ignoring EXIF
-                        Logger.shared.log("ℹ️ Saving landscape image as-is (ignoring EXIF orientation \(originalImage.imageOrientation.rawValue))", category: .camera)
-                        correctedImage = UIImage(cgImage: cgImage, scale: originalImage.scale, orientation: .up)
+                        Logger.shared.log("No rotation needed", category: .camera)
+                        correctedImage = baseImage
                     }
                 } else {
                     correctedImage = originalImage
-                    Logger.shared.log("⚠️ Failed to get CGImage, using original", level: .warning, category: .camera)
+                    Logger.shared.log("Failed to get CGImage, using original", level: .warning, category: .camera)
                 }
             } else {
-                // Camera captured portrait - use standard orientation fixing
-                Logger.shared.log("📐 Camera pixels are portrait (\(cgImageWidth)x\(cgImageHeight))", category: .camera)
-                
-                if orientationCorrectionMode == .inverted {
-                    // Apply 180° rotation for inverted mode
-                    Logger.shared.log("🔄 Applying 180° rotation for inverted mode", category: .camera)
-                    if let rotated = rotateImage(originalImage, by: 180) {
+                // Camera captured portrait - fix EXIF orientation first, then apply user-selected rotation
+                Logger.shared.log("Portrait camera pixels (\(cgImageWidth)x\(cgImageHeight))", category: .camera)
+
+                let baseImage = fixImageOrientation(originalImage)
+                let angle = orientationCorrectionMode.rotationAngle
+                if angle != 0 {
+                    Logger.shared.log("Applying \(angle)° rotation (\(orientationCorrectionMode.description))", category: .camera)
+                    if let rotated = rotateImage(baseImage, by: angle) {
                         correctedImage = rotated
-                        Logger.shared.log("✅ Image rotated 180° - New size: width=\(rotated.size.width), height=\(rotated.size.height)", category: .camera)
+                        Logger.shared.log("Image rotated - New size: width=\(rotated.size.width), height=\(rotated.size.height)", category: .camera)
                     } else {
-                        correctedImage = originalImage
-                        Logger.shared.log("⚠️ Failed to rotate image, using original", level: .warning, category: .camera)
+                        correctedImage = baseImage
+                        Logger.shared.log("Failed to rotate image, using base", level: .warning, category: .camera)
                     }
                 } else {
-                    Logger.shared.log("ℹ️ Using standard orientation fixing", category: .camera)
-                    correctedImage = fixImageOrientation(originalImage)
+                    Logger.shared.log("No rotation needed", category: .camera)
+                    correctedImage = baseImage
                 }
             }
-            
+
             // Convert to JPEG data
             guard let correctedImageData = correctedImage.jpegData(compressionQuality: 0.95) else {
                 throw NSError(domain: "RecordingManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to JPEG"])
@@ -1106,7 +1108,7 @@ final class RecordingManager: NSObject, ObservableObject {
         @unknown default: return ".unknown"
         }
     }
-    
+
     /// Generate filename for recordings
     private func generateFilename(extension fileExtension: String) -> String {
         let formatter = DateFormatter()

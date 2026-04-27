@@ -163,28 +163,22 @@ struct CameraPreviewView: UIViewRepresentable {
                 }
                 return
             }
-            
-            // We have a preview layer - check if it's from an Openterface camera
-            if self.cameraManager.hasOpenterfaceCamera {
-                // Show the camera preview
-                previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
-                
-                // Apply frame and transform
-                self.updatePreviewLayerTransform(previewLayer, in: view)
-                
-                // Update orientation
-                self.updateLayerOrientation(previewLayer)
-                
-                view.layer.addSublayer(previewLayer)
-                context.coordinator.previewLayer = previewLayer
-                
-                // Force a layout update
-                view.setNeedsLayout()
-                view.layoutIfNeeded()
-            } else {
-                // Not an Openterface camera, show guide image
-                self.setupGuideImageView(in: view, context: context)
-            }
+
+            // We have a valid preview layer — show the camera feed
+            previewLayer.videoGravity = AVLayerVideoGravity.resizeAspect
+
+            // Apply frame and transform
+            self.updatePreviewLayerTransform(previewLayer, in: view)
+
+            // Update orientation
+            self.updateLayerOrientation(previewLayer)
+
+            view.layer.addSublayer(previewLayer)
+            context.coordinator.previewLayer = previewLayer
+
+            // Force a layout update
+            view.setNeedsLayout()
+            view.layoutIfNeeded()
         }
     }
     
@@ -313,99 +307,60 @@ struct CameraPreviewView: UIViewRepresentable {
         let viewBounds = view.bounds
         let zoomFactor = cameraManager.currentZoomFactor
         let viewportPosition = cameraManager.viewportPosition
-        
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+
         if zoomFactor > 1.0 {
-            // Set frame to accommodate the entire zoomed content
             let zoomedSize = CGSize(width: viewBounds.width * zoomFactor, height: viewBounds.height * zoomFactor)
             previewLayer.frame = CGRect(origin: .zero, size: zoomedSize)
-            
-            // Position the layer so the desired viewport is visible in the view
-            // Positive viewport position means we want to see content on the left,
-            // so move the layer right to reveal it
-            let offsetX = viewportPosition.x
-            let offsetY = viewportPosition.y
-            let centerX = viewBounds.midX + offsetX
-            let centerY = viewBounds.midY + offsetY
-            previewLayer.position = CGPoint(x: centerX, y: centerY)
-            
-            Logger.shared.debug("Preview layer frame/position applied - zoom: \(zoomFactor), viewport: (\(viewportPosition.x), \(viewportPosition.y)), frame: \(zoomedSize), position: (\(centerX), \(centerY))", category: .ui)
+            previewLayer.position = CGPoint(x: viewBounds.midX + viewportPosition.x, y: viewBounds.midY + viewportPosition.y)
         } else {
-            // Reset to normal size and center when not zoomed
             previewLayer.frame = viewBounds
-            previewLayer.position = CGPoint(x: viewBounds.midX, y: viewBounds.midY)
-            // Logger.shared.debug("Preview layer reset to normal size", category: .ui)
         }
+
+        CATransaction.commit()
     }
     
     private func updateLayerOrientation(_ previewLayer: AVCaptureVideoPreviewLayer) {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { 
-            return 
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return
         }
-        
+
         let interfaceOrientation = windowScene.interfaceOrientation
-        
+
         guard let connection = previewLayer.connection else {
             return
         }
-        
+
         // Configure mirroring first
         if connection.isVideoMirroringSupported {
             connection.automaticallyAdjustsVideoMirroring = false
-            // For external cameras (like capture cards), disable mirroring
             connection.isVideoMirrored = false
         }
-        
-        if connection.isVideoOrientationSupported {
-            // For external cameras/capture cards, try corrected orientation
-            let correctedOrientation = getCorrectedOrientation(for: interfaceOrientation)
-            previewLayer.connection?.videoOrientation = correctedOrientation
+
+        // iOS 17+: use videoRotationAngle instead of videoOrientation
+        if connection.isVideoRotationAngleSupported(90) {
+            let angle = getCorrectedRotationAngle(for: interfaceOrientation)
+            previewLayer.connection?.videoRotationAngle = angle
         }
     }
-    
-    /// Get corrected orientation for external cameras that may have flipped video
-    private func getCorrectedOrientation(for interfaceOrientation: UIInterfaceOrientation) -> AVCaptureVideoOrientation {
-        // Use the camera manager's orientation correction mode if available
-        switch cameraManager.orientationCorrectionMode {
-        case .normal:
-            // Standard orientation mapping
-            switch interfaceOrientation {
-            case .portrait: return .portrait
-            case .portraitUpsideDown: return .portraitUpsideDown
-            case .landscapeLeft: return .landscapeLeft
-            case .landscapeRight: return .landscapeRight
-            default: return .portrait
-            }
-            
-        case .inverted:
-            // Inverted orientation mapping (fixes up/down and left/right flips)
-            switch interfaceOrientation {
-            case .portrait: return .portraitUpsideDown
-            case .portraitUpsideDown: return .portrait
-            case .landscapeLeft: return .landscapeRight
-            case .landscapeRight: return .landscapeLeft
-            default: return .portraitUpsideDown
-            }
-            
-//        case .rotated180:
-//            // 180° rotation
-//            switch interfaceOrientation {
-//            case .portrait: return .portraitUpsideDown
-//            case .portraitUpsideDown: return .portrait
-//            case .landscapeLeft: return .landscapeRight
-//            case .landscapeRight: return .landscapeLeft
-//            default: return .portraitUpsideDown
-//            }
-//            
-//        case .mirroredInverted:
-//            // For now, same as inverted (mirroring handled separately)
-//            switch interfaceOrientation {
-//            case .portrait: return .portraitUpsideDown
-//            case .portraitUpsideDown: return .portrait
-//            case .landscapeLeft: return .landscapeRight
-//            case .landscapeRight: return .landscapeLeft
-//            default: return .portraitUpsideDown
-//            }
+
+    /// Map interface orientation to rotation angle (iOS 17+ replacement for AVCaptureVideoOrientation)
+    private func getCorrectedRotationAngle(for interfaceOrientation: UIInterfaceOrientation) -> CGFloat {
+        let baseAngle: CGFloat
+        switch interfaceOrientation {
+        case .portrait: baseAngle = 0
+        case .portraitUpsideDown: baseAngle = 180
+        case .landscapeLeft: baseAngle = 90
+        case .landscapeRight: baseAngle = 270
+        default: baseAngle = 0
         }
+
+        let offset = cameraManager.orientationCorrectionMode.previewAngleOffset
+        var angle = fmod(baseAngle + offset, 360)
+        if angle < 0 { angle += 360 }
+        return angle
     }
 }
 
@@ -426,6 +381,11 @@ extension CameraPreviewView {
         
         // Track pan gesture start position (internal access for TouchEnabledView)
         var panStartPosition: CGPoint = .zero
+
+        // Track viewport position and touch position at pan start for absolute tracking
+        var panStartViewport: CGPoint = .zero
+        var panStartTouchPosition: CGPoint = .zero
+
         
         // Track initial touch position from touchesBegan (for Apple Pencil)
         var initialTouchPosition: CGPoint? = nil
@@ -570,31 +530,29 @@ extension CameraPreviewView {
                 switch gesture.state {
                 case .began:
                     Logger.shared.debug("Single-finger viewport pan began in zoom mode", category: .ui)
-                    
+                    // Store the starting viewport and touch position for absolute tracking
+                    panStartViewport = parent.cameraManager.viewportPosition
+                    panStartTouchPosition = currentLocation
+
                 case .changed:
-                    let translation = gesture.translation(in: gesture.view)
-                    
-                    // Use translation directly for natural panning
-                    // Drag right = viewport moves right (see content on right)
-                    // Drag left = viewport moves left (see content on left)
-                    
-                    // Update viewport position through camera manager (synchronous)
+                    // Calculate viewport from absolute touch delta — no accumulated state
+                    let dx = currentLocation.x - panStartTouchPosition.x
+                    let dy = currentLocation.y - panStartTouchPosition.y
+
                     if let view = gesture.view {
-                        parent.cameraManager.updateViewportPosition(translation, viewBounds: view.bounds)
-                        
+                        parent.cameraManager.setViewportPosition(
+                            CGPoint(x: panStartViewport.x + dx, y: panStartViewport.y + dy),
+                            viewBounds: view.bounds
+                        )
+
                         // Immediately update the preview layer transform without animation
                         if let previewLayer = self.previewLayer {
                             CATransaction.begin()
-                            CATransaction.setDisableActions(true) // Disable animations
+                            CATransaction.setDisableActions(true)
                             self.parent.updatePreviewLayerTransform(previewLayer, in: view)
                             CATransaction.commit()
                         }
                     }
-                    
-                    // Reset translation to get incremental changes
-                    gesture.setTranslation(.zero, in: gesture.view)
-                    
-                    Logger.shared.debug("Single-finger viewport pan - translation: \(translation)", category: .ui)
                     
                 case .ended, .cancelled:
                     Logger.shared.debug("Single-finger viewport pan ended in zoom mode", category: .ui)
@@ -1036,7 +994,28 @@ extension CameraPreviewView {
 /// This ensures smooth drawing by processing all intermediate points that UIGestureRecognizer might miss
 class TouchEnabledView: UIView {
     weak var coordinator: CameraPreviewView.Coordinator?
-    
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        // Update preview layer frame when the view is resized by Auto Layout / SwiftUI
+        if let previewLayer = coordinator?.previewLayer {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            coordinator?.parent.updatePreviewLayerTransform(previewLayer, in: self)
+            CATransaction.commit()
+        }
+
+        // Update background image view frame
+        coordinator?.backgroundImageView?.frame = bounds
+
+        // Update simulator layer frame
+        coordinator?.simulatorLayer?.frame = bounds
+
+        // Update dragging indicator frame
+        coordinator?.draggingIndicatorLabel?.center = CGPoint(x: bounds.midX, y: bounds.midY)
+    }
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         // Always call super first to allow gesture recognizers to work
         super.touchesBegan(touches, with: event)

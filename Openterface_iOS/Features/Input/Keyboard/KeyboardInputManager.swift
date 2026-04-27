@@ -133,7 +133,7 @@ extension KeyboardInputManager: KeyboardInputProtocol {
         // Handle regular keys
         let keyAlias = mapKeyAlias(key)
         
-        guard let keyCode = keyboardCodes[keyAlias] else {
+        guard keyboardCodes[keyAlias] != nil else {
             print("❌ Unknown key: \(key)")
             return
         }
