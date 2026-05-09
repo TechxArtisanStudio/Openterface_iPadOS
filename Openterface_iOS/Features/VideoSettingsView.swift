@@ -14,20 +14,23 @@ public struct VideoSettingsView: View {
     
     // Available presets with their display names
     private let availablePresets: [(preset: AVCaptureSession.Preset, name: String)] = [
-        (.hd4K3840x2160, "2160p (4K)"),
         (.hd1920x1080, "1080p"),
         (.hd1280x720, "720p"),
         (.medium, "720p"),
-        (.low, "480p"),
         (.vga640x480, "VGA"),
         (.cif352x288, "CIF")
     ]
     
+    private var supportedPresets: [(preset: AVCaptureSession.Preset, name: String)] {
+        guard let session = cameraManager.captureSession else { return availablePresets }
+        return availablePresets.filter { session.canSetSessionPreset($0.preset) }
+    }
+
     public var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Resolution")) {
-                    ForEach(availablePresets, id: \.preset.rawValue) { item in
+                    ForEach(supportedPresets, id: \.preset.rawValue) { item in
                         Button(action: {
                             cameraManager.setSessionPreset(item.preset)
                             isPresented = false
@@ -42,6 +45,10 @@ public struct VideoSettingsView: View {
                             }
                         }
                         .foregroundColor(.primary)
+                    }
+                    if cameraManager.captureSession == nil {
+                        Text("No camera connected")
+                            .foregroundColor(.secondary)
                     }
                 }
             }

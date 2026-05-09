@@ -43,15 +43,6 @@ struct ControlsView: View {
                 
                 // 2. Video Settings Button
                 Menu {
-                    Button(action: { appCoordinator.cameraManager.setSessionPreset(.hd4K3840x2160) }) {
-                        HStack {
-                            Text("2160p (4K)")
-                            if appCoordinator.cameraManager.currentResolution == "2160p" {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
                     Button(action: { appCoordinator.cameraManager.setSessionPreset(.hd1920x1080) }) {
                         HStack {
                             Text("1080p")
@@ -65,15 +56,6 @@ struct ControlsView: View {
                         HStack {
                             Text("720p")
                             if appCoordinator.cameraManager.currentResolution == "720p" {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                    Button(action: { appCoordinator.cameraManager.setSessionPreset(.low) }) {
-                        HStack {
-                            Text("480p")
-                            if appCoordinator.cameraManager.currentResolution == "480p" {
                                 Spacer()
                                 Image(systemName: "checkmark")
                             }
