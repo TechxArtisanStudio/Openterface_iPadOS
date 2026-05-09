@@ -332,9 +332,44 @@ final class MouseInputManager: ObservableObject {
         sendMouseButtonState(buttons: 0x00, wheel: 0)
     }
 
+    /// Send mouse click at normalized position (for AI tools)
+    func clickAtNormalizedPosition(x: CGFloat, y: CGFloat, button: UInt8 = 0x01) {
+        hidInputManager.setMouseMode(.absolute)
+        let pos = (x: x, y: y)
+        hidInputManager.sendAbsoluteMouseInput(x: pos.x, y: pos.y, buttons: 0x00, wheel: 0)
+        Thread.sleep(forTimeInterval: 0.01)
+        hidInputManager.sendAbsoluteMouseInput(x: pos.x, y: pos.y, buttons: button, wheel: 0)
+        Thread.sleep(forTimeInterval: 0.05)
+        hidInputManager.sendAbsoluteMouseInput(x: pos.x, y: pos.y, buttons: 0x00, wheel: 0)
+    }
+
+    /// Send double click at normalized position (for AI tools)
+    func doubleClickAtNormalizedPosition(x: CGFloat, y: CGFloat, button: UInt8 = 0x01) {
+        hidInputManager.setMouseMode(.absolute)
+        clickAtNormalizedPosition(x: x, y: y, button: button)
+        Thread.sleep(forTimeInterval: 0.1)
+        clickAtNormalizedPosition(x: x, y: y, button: button)
+    }
+
+    /// Send drag from one normalized position to another (for AI tools)
+    func dragFromNormalizedPosition(startX: CGFloat, startY: CGFloat, to endX: CGFloat, endY: CGFloat) {
+        hidInputManager.setMouseMode(.absolute)
+        // Move to start
+        hidInputManager.sendAbsoluteMouseInput(x: startX, y: startY, buttons: 0x00, wheel: 0)
+        Thread.sleep(forTimeInterval: 0.01)
+        // Press
+        hidInputManager.sendAbsoluteMouseInput(x: startX, y: startY, buttons: 0x01, wheel: 0)
+        Thread.sleep(forTimeInterval: 0.01)
+        // Move to end (with button pressed)
+        hidInputManager.sendAbsoluteMouseInput(x: endX, y: endY, buttons: 0x01, wheel: 0)
+        Thread.sleep(forTimeInterval: 0.01)
+        // Release
+        hidInputManager.sendAbsoluteMouseInput(x: endX, y: endY, buttons: 0x00, wheel: 0)
+    }
+
     func handleRightClick() {
         logger.debug("Performing right click action", category: .mouse)
-        
+
         // Use HIDInputManager for right click
         hidInputManager.sendMouseClick(button: 0x02)
     }

@@ -17,6 +17,7 @@
 		6B5E94B22EA1F9B00027EB7B /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */; };
 		6BA1A1112EA8000000000001 /* BluetoothLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */; };
 		6BA1A1132EA9000000000001 /* InfoOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA1A1122EA9000000000001 /* InfoOverlayView.swift */; };
+		A1B2C3D4E5F6A1B3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2 /* SettingsView.swift */; };
 		BF0643F52E3E5910009F04D1 /* Openterface_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */; };
 		BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643F82E3E5917009F04D1 /* Assets.xcassets */; };
 		BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF0643FB2E3E5917009F04D1 /* Preview Assets.xcassets */; };
@@ -44,6 +45,20 @@
 		BF4ED0712E3F9B3D0045D619 /* HIDUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */; };
 		BF4ED0722E3F9B3D0045D619 /* ExternalKeyboardHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */; };
 		BF4ED0732E3F9B3D0045D619 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF4ED0702E3F9B3C0045D619 /* Extensions.swift */; };
+		4E1541D7A17A4452934681A3 /* GitHubAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E5AD8B6FDA46489B699BC6 /* GitHubAuthService.swift */; };
+		ED19379E509540F9A8AFD411 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A499DE59EC0B4A02BB1A51C0 /* KeychainService.swift */; };
+		A86E2B10FC014CFDBBB464AE /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7956E09C7C47D681A5FA8F /* ChatModels.swift */; };
+		72CFB2DFA02B4C0F99F4A2A1 /* MacroModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */; };
+		F49387517EA9476BB35F5981 /* ChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D9F06A54AB4C1E9505E2AB /* ChatManager.swift */; };
+		54F1A891BB854C8ABB4A8280 /* ChatScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D79B2172BA3A47BA8F821D68 /* ChatScreenCaptureService.swift */; };
+		93BBE49A256E4695B1D20394 /* ChatConversationBuilderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BAFAB11D7A46CBAC10BCC6 /* ChatConversationBuilderService.swift */; };
+		545378B68F9C41A389E69079 /* ChatToolExecutionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E46FC9BEBDAA4921AAA93436 /* ChatToolExecutionService.swift */; };
+		50D090EEDDA64847A9C63BA7 /* MacroInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80D235D1D864A23BEDD38F4 /* MacroInputManager.swift */; };
+		6B71AE92259E4FB7BB1B5501 /* ChatBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52D2A2D582E411CABBF752B /* ChatBubbleView.swift */; };
+		8E6614CA880345C8B4EFF043 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A98081D79B3140D1ACF48F05 /* ChatView.swift */; };
+		235229C4F7DA43DFA55A1615 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBB6BD93D944F8C88F45097 /* LoginView.swift */; };
+		810E4A67D1314DD68977D458 /* MacroPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 436B155E2505417499682BC6 /* MacroPanelView.swift */; };
+		7CC84EAFBA584625980738E0 /* MacroEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002452F3FCBC465CB3B70DE2 /* MacroEditorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +89,7 @@
 		6B5E94B12EA1F9B00027EB7B /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BluetoothLogoView.swift; sourceTree = "<group>"; };
 		6BA1A1122EA9000000000001 /* InfoOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoOverlayView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A1B2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BF0643F12E3E5910009F04D1 /* Openterface KVM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Openterface KVM.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOSApp.swift; sourceTree = "<group>"; };
 		BF0643F82E3E5917009F04D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -104,6 +120,20 @@
 		BF4ED06D2E3F9B3C0045D619 /* HIDUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HIDUtils.swift; sourceTree = "<group>"; };
 		BF4ED06E2E3F9B3C0045D619 /* ExternalKeyboardHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExternalKeyboardHandler.swift; sourceTree = "<group>"; };
 		BF4ED0702E3F9B3C0045D619 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		62E5AD8B6FDA46489B699BC6 /* GitHubAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Auth/GitHubAuthService.swift; sourceTree = SOURCE_ROOT; };
+		A499DE59EC0B4A02BB1A51C0 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Security/KeychainService.swift; sourceTree = SOURCE_ROOT; };
+		6D7956E09C7C47D681A5FA8F /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Models/ChatModels.swift; sourceTree = SOURCE_ROOT; };
+		E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Models/MacroModels.swift; sourceTree = SOURCE_ROOT; };
+		D0D9F06A54AB4C1E9505E2AB /* ChatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/ChatManager.swift; sourceTree = SOURCE_ROOT; };
+		D79B2172BA3A47BA8F821D68 /* ChatScreenCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/Services/ChatScreenCaptureService.swift; sourceTree = SOURCE_ROOT; };
+		88BAFAB11D7A46CBAC10BCC6 /* ChatConversationBuilderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/Services/ChatConversationBuilderService.swift; sourceTree = SOURCE_ROOT; };
+		E46FC9BEBDAA4921AAA93436 /* ChatToolExecutionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/Services/ChatToolExecutionService.swift; sourceTree = SOURCE_ROOT; };
+		C80D235D1D864A23BEDD38F4 /* MacroInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/Input/MacroInputManager.swift; sourceTree = SOURCE_ROOT; };
+		E52D2A2D582E411CABBF752B /* ChatBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/UI/Components/ChatBubbleView.swift; sourceTree = SOURCE_ROOT; };
+		A98081D79B3140D1ACF48F05 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/UI/Components/ChatView.swift; sourceTree = SOURCE_ROOT; };
+		1BBB6BD93D944F8C88F45097 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/UI/Components/LoginView.swift; sourceTree = SOURCE_ROOT; };
+		436B155E2505417499682BC6 /* MacroPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/UI/Components/MacroPanelView.swift; sourceTree = SOURCE_ROOT; };
+		002452F3FCBC465CB3B70DE2 /* MacroEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/UI/Components/MacroEditorView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +190,12 @@
 				BF0643F42E3E5910009F04D1 /* Openterface_iOSApp.swift */,
 				BF0643F82E3E5917009F04D1 /* Assets.xcassets */,
 				BF0643FA2E3E5917009F04D1 /* Preview Content */,
+				04FA6BBA0F454078BF219077 /* Auth */,
+				25DEF48A67A24CF782494773 /* Security */,
+				6D7956E09C7C47D681A5FA8F /* ChatModels.swift */,
+				E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */,
+				2523B43B0FD0484FBC5B6FD0 /* AI */,
+				C80D235D1D864A23BEDD38F4 /* MacroInputManager.swift */,
 			);
 			path = Openterface_iOS;
 			sourceTree = "<group>";
@@ -237,6 +273,11 @@
 			children = (
 				BF4ED0422E3F45910045D619 /* Screens */,
 				BF4ED0442E3F45910045D619 /* Components */,
+				E52D2A2D582E411CABBF752B /* ChatBubbleView.swift */,
+				A98081D79B3140D1ACF48F05 /* ChatView.swift */,
+				1BBB6BD93D944F8C88F45097 /* LoginView.swift */,
+				436B155E2505417499682BC6 /* MacroPanelView.swift */,
+				002452F3FCBC465CB3B70DE2 /* MacroEditorView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -258,6 +299,7 @@
 				6BA1A1102EA8000000000001 /* BluetoothLogoView.swift */,
 				BF4ED0472E3F45910045D619 /* FloatingKeyboardView.swift */,
 				6BA1A1122EA9000000000001 /* InfoOverlayView.swift */,
+				A1B2C3D4E5F6A1B2 /* SettingsView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -360,6 +402,41 @@
 				BF4ED0702E3F9B3C0045D619 /* Extensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		04FA6BBA0F454078BF219077 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				62E5AD8B6FDA46489B699BC6 /* GitHubAuthService.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		25DEF48A67A24CF782494773 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				A499DE59EC0B4A02BB1A51C0 /* KeychainService.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		2523B43B0FD0484FBC5B6FD0 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				D0D9F06A54AB4C1E9505E2AB /* ChatManager.swift */,
+				08E61E2864FB4284862ACFEA /* Services */,
+			);
+			path = AI;
+			sourceTree = "<group>";
+		};
+		08E61E2864FB4284862ACFEA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D79B2172BA3A47BA8F821D68 /* ChatScreenCaptureService.swift */,
+				88BAFAB11D7A46CBAC10BCC6 /* ChatConversationBuilderService.swift */,
+				E46FC9BEBDAA4921AAA93436 /* ChatToolExecutionService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -493,6 +570,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E1541D7A17A4452934681A3 /* GitHubAuthService.swift in Sources */,
+				ED19379E509540F9A8AFD411 /* KeychainService.swift in Sources */,
+				A86E2B10FC014CFDBBB464AE /* ChatModels.swift in Sources */,
+				72CFB2DFA02B4C0F99F4A2A1 /* MacroModels.swift in Sources */,
+				F49387517EA9476BB35F5981 /* ChatManager.swift in Sources */,
+				54F1A891BB854C8ABB4A8280 /* ChatScreenCaptureService.swift in Sources */,
+				93BBE49A256E4695B1D20394 /* ChatConversationBuilderService.swift in Sources */,
+				545378B68F9C41A389E69079 /* ChatToolExecutionService.swift in Sources */,
+				50D090EEDDA64847A9C63BA7 /* MacroInputManager.swift in Sources */,
+				6B71AE92259E4FB7BB1B5501 /* ChatBubbleView.swift in Sources */,
+				8E6614CA880345C8B4EFF043 /* ChatView.swift in Sources */,
+				235229C4F7DA43DFA55A1615 /* LoginView.swift in Sources */,
+				810E4A67D1314DD68977D458 /* MacroPanelView.swift in Sources */,
+				7CC84EAFBA584625980738E0 /* MacroEditorView.swift in Sources */,
 				6B5E94B22EA1F9B00027EB7B /* ControlsView.swift in Sources */,
 				BF4ED03F2E3F45680045D619 /* InputProtocol.swift in Sources */,
 				BF4ED0612E3F45B10045D619 /* Extensions.swift in Sources */,
@@ -515,6 +606,7 @@
 				BF4ED0542E3F45910045D619 /* BluetoothConnectionView.swift in Sources */,
 				6BA1A1112EA8000000000001 /* BluetoothLogoView.swift in Sources */,
 				6BA1A1132EA9000000000001 /* InfoOverlayView.swift in Sources */,
+				A1B2C3D4E5F6A1B3 /* SettingsView.swift in Sources */,
 				6B148F382EA7A8A200715D42 /* SimulatorCameraMock.swift in Sources */,
 				BF4ED0522E3F45910045D619 /* MainContentView.swift in Sources */,
 				BF4ED05A2E3F45910045D619 /* BluetoothConnectionManager.swift in Sources */,
@@ -704,7 +796,6 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -747,7 +838,6 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -819,7 +909,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 				TEST_TARGET_NAME = Openterface_iOS;
 			};
 			name = Debug;
@@ -837,7 +927,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 				TEST_TARGET_NAME = Openterface_iOS;
 			};
 			name = Release;

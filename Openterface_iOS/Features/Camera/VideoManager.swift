@@ -544,7 +544,7 @@ private extension VideoManager {
 
         availableCameras = discoverySession.devices
 
-        // Select external camera if available, otherwise built-in
+        // Only select external cameras (Openterface KVM device)
         if let externalCamera = availableCameras.first(where: { $0.deviceType == .external }) {
             selectedCamera = externalCamera
             currentDeviceName = externalCamera.localizedName
@@ -555,10 +555,8 @@ private extension VideoManager {
             currentDeviceName = externalCamera.localizedName
             hasNewCameraDetected = true
             print("📹 Selected unspecified position camera: \(externalCamera.localizedName)")
-        } else if let builtInCamera = availableCameras.first {
-            selectedCamera = builtInCamera
-            currentDeviceName = builtInCamera.localizedName
-            print("📹 Selected built-in camera: \(builtInCamera.localizedName)")
+        } else {
+            print("📹 No external camera connected")
         }
 
         print("📹 Found \(availableCameras.count) cameras")

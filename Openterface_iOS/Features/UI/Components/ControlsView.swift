@@ -11,6 +11,7 @@ import SwiftUI
 struct ControlsView: View {
     @ObservedObject var appCoordinator: AppCoordinator
     @ObservedObject private var bluetoothManager: BluetoothConnectionManager
+    @AppStorage("AIIntegrationEnabled") private var isAIEnabled = false
     
     init(appCoordinator: AppCoordinator) {
         self.appCoordinator = appCoordinator
@@ -138,6 +139,34 @@ struct ControlsView: View {
                     isActive: appCoordinator.showFloatingKeyboard
                 )
 
+                // 6.3. Target OS Button (cycles: Win -> Mac -> Linux)
+                TargetOSButton(
+                    targetOS: appCoordinator.targetOS,
+                    action: {
+                        appCoordinator.cycleTargetOS()
+                    }
+                )
+
+                // 6.5. Macro Button
+                ControlButton(
+                    icon: "keyboard.badge.ellipsis",
+                    label: "Macro",
+                    action: {
+                        appCoordinator.toggleMacroPanel()
+                    }
+                )
+
+                // 6.6. AI Chat Button (only shown when AI integration is enabled)
+                if isAIEnabled {
+                    ControlButton(
+                        icon: "message.fill",
+                        label: "AI",
+                        action: {
+                            appCoordinator.toggleChatPanel()
+                        }
+                    )
+                }
+
                 // 7. Zoom Mode Button
                 ControlButton(
                     icon: "magnifyingglass.circle.fill",
@@ -191,12 +220,12 @@ struct ControlsView: View {
                 
                 Spacer()
 
-                // 9. Advanced Options Button
+                // 9. Settings Button
                 ControlButton(
-                    icon: "ellipsis",
-                    label: "More",
+                    icon: "gearshape.fill",
+                    label: "Settings",
                     action: {
-                        appCoordinator.showAdvancedMenu.toggle()
+                        appCoordinator.showSettings.toggle()
                     }
                 )
             }
@@ -313,4 +342,50 @@ struct ControlButton<Icon: View>: View {
 
 #Preview {
     ControlsView(appCoordinator: AppCoordinator())
+}
+
+// MARK: - Target OS Button
+struct TargetOSButton: View {
+    let targetOS: MacroTargetSystem
+    let action: () -> Void
+
+    private var displayLabel: String {
+        switch targetOS {
+        case .macOS: return "Mac"
+        case .windows: return "Win"
+        case .linux: return "Linux"
+        case .iOS: return "iOS"
+        case .android: return "Android"
+        }
+    }
+
+    private var displayIcon: String {
+        switch targetOS {
+        case .macOS: return "applelogo"
+        case .windows: return "pc"
+        case .linux: return "terminal"
+        case .iOS: return "iphone"
+        case .android: return "phone.fill"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Button(action: action) {
+                Image(systemName: displayIcon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.primaryAccent)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.primaryAccent.opacity(0.1))
+                    )
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Text(displayLabel)
+                .font(.caption2)
+                .foregroundColor(.gray)
+        }
+    }
 }

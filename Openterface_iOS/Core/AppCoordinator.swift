@@ -17,20 +17,35 @@ final class AppCoordinator: ObservableObject {
     @Published var cameraManager: CameraSessionManager
     @Published var keyboardManager: KeyboardInputManager
     @Published var mouseManager: MouseInputManager
-    
+    @Published var macroManager: MacroInputManager!
+    @Published var githubAuthService: GitHubAuthService
+    private(set) lazy var chatManager = ChatManager(
+        keyboardManager: keyboardManager,
+        mouseManager: mouseManager,
+        macroManager: macroManager,
+        cameraManager: cameraManager,
+        targetOS: { [weak self] in self?.targetOS ?? .windows }
+    )
+
     // MARK: - UI State
     @Published var showBLEPopup = false
     @Published var showFloatingKeyboard = false
     @Published var showAdvancedMenu = false
+    @Published var showSettings = false
     @Published var isRecording = false
     @Published var showResolutionView = false
     @Published var isZoomMode = false
     @Published var isFullScreen = false
     @Published var isPencilMode = false // false = Pan mode (relative), true = iPencil mode (absolute)
     @Published var showInfoOverlay = false
-    
+    @Published var showMacroPanel = false
+    @Published var showChatPanel = false
+    @Published var showLoginSheet = false
+    @Published var targetOS: MacroTargetSystem = .windows
+
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
+    private let targetOSKey = "TargetOS"
     
     // MARK: - Initialization
     init() {
@@ -40,12 +55,24 @@ final class AppCoordinator: ObservableObject {
         self.cameraManager = CameraSessionManager()
         self.keyboardManager = KeyboardInputManager(connectionManager: bluetoothConnectionManager)
         self.mouseManager = MouseInputManager(connectionManager: bluetoothConnectionManager)
+
+        // Initialize GitHub auth service (before other code that uses self)
+        self.githubAuthService = GitHubAuthService()
         
         // Initialize composite key manager
         let compositeKeyManager = CompositeKeyInputManager()
         compositeKeyManager.setKeyboardManager(keyboardManager)
         keyboardManager.setCompositeKeyManager(compositeKeyManager)
-        
+
+        // Initialize macro manager
+        self.macroManager = MacroInputManager(keyboardManager: keyboardManager)
+
+        // Load saved target OS
+        if let savedOS = UserDefaults.standard.string(forKey: targetOSKey),
+           let target = MacroTargetSystem(rawValue: savedOS) {
+            self.targetOS = target
+        }
+
         setupBindings()
         setupInitialConfiguration()
     }
@@ -87,10 +114,13 @@ final class AppCoordinator: ObservableObject {
     private func setupInitialConfiguration() {
         // Keep screen always on during usage
         UIApplication.shared.isIdleTimerDisabled = true
-        
+
         // Disable Bluetooth logging to reduce noise
         Logger.shared.disableCategory(.bluetooth)
-        
+
+        // Check login status
+        githubAuthService.checkLoginStatus()
+
         // Start initial services
         startInitialServices()
     }
@@ -161,6 +191,41 @@ final class AppCoordinator: ObservableObject {
     /// Toggle floating keyboard visibility
     func toggleKeyboard() {
         showFloatingKeyboard.toggle()
+    }
+
+    /// Toggle macro panel
+    func toggleMacroPanel() {
+        showMacroPanel.toggle()
+    }
+
+    /// Toggle chat panel
+    func toggleChatPanel() {
+        showChatPanel.toggle()
+    }
+
+    /// Show login sheet
+    func showLogin() {
+        showLoginSheet = true
+    }
+
+    /// Logout from AI service
+    func logout() {
+        DispatchQueue.main.async {
+            self.githubAuthService.logout()
+        }
+    }
+
+    /// Cycle target OS: Windows -> macOS -> Linux -> iOS -> Android -> Windows
+    func cycleTargetOS() {
+        let allOS: [MacroTargetSystem] = [.windows, .macOS, .linux, .iOS, .android]
+        guard let currentIndex = allOS.firstIndex(of: targetOS) else {
+            targetOS = .windows
+            UserDefaults.standard.set(targetOS.rawValue, forKey: targetOSKey)
+            return
+        }
+        let nextIndex = (currentIndex + 1) % allOS.count
+        targetOS = allOS[nextIndex]
+        UserDefaults.standard.set(targetOS.rawValue, forKey: targetOSKey)
     }
     
     /// Request camera access

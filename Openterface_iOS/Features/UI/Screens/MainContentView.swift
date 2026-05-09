@@ -170,6 +170,29 @@ struct MainContentView: View {
         .sheet(isPresented: $appCoordinator.showBLEPopup) {
             BluetoothConnectionView(bluetoothManager: appCoordinator.bluetoothManager)
         }
+        .sheet(isPresented: $appCoordinator.showMacroPanel) {
+            MacroPanelView(
+                macroManager: appCoordinator.macroManager,
+                defaultFilter: appCoordinator.targetOS
+            )
+            .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $appCoordinator.showChatPanel) {
+            ChatView(
+                chatManager: appCoordinator.chatManager,
+                authService: appCoordinator.githubAuthService,
+                appCoordinator: appCoordinator,
+                showLoginSheet: $appCoordinator.showLoginSheet
+            )
+        }
+        .sheet(isPresented: $appCoordinator.showLoginSheet) {
+            LoginView(authService: appCoordinator.githubAuthService)
+        }
+        .sheet(isPresented: $appCoordinator.showSettings) {
+            SettingsView(appCoordinator: appCoordinator)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
         .overlay {
             // Floating Virtual Keyboard
             if appCoordinator.showFloatingKeyboard {
