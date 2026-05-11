@@ -132,14 +132,6 @@ struct MainContentView: View {
             )
             .presentationDetents([.medium, .large])
         }
-        .sheet(isPresented: $appCoordinator.showChatPanel) {
-            ChatView(
-                chatManager: appCoordinator.chatManager,
-                authService: appCoordinator.githubAuthService,
-                appCoordinator: appCoordinator,
-                showLoginSheet: $appCoordinator.showLoginSheet
-            )
-        }
         .sheet(isPresented: $appCoordinator.showLoginSheet) {
             LoginView(authService: appCoordinator.githubAuthService)
         }
@@ -169,6 +161,18 @@ struct MainContentView: View {
                 }
                 .transition(.move(edge: .trailing).combined(with: .opacity))
                 .animation(.spring(response: 0.3), value: appCoordinator.showInfoOverlay)
+            }
+
+            // Draggable AI Chat Panel
+            if appCoordinator.showChatPanel {
+                ChatFloatingPanelView(
+                    chatManager: appCoordinator.chatManager,
+                    authService: appCoordinator.githubAuthService,
+                    appCoordinator: appCoordinator,
+                    showLoginSheet: $appCoordinator.showLoginSheet,
+                    isPresented: $appCoordinator.showChatPanel
+                )
+                .ignoresSafeArea(.keyboard, edges: .bottom)
             }
         }
         .background {

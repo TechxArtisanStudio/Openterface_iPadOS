@@ -10,13 +10,15 @@ struct ChatView: View {
     @ObservedObject var authService: GitHubAuthService
     @ObservedObject var appCoordinator: AppCoordinator
     @Binding var showLoginSheet: Bool
+    var onDone: (() -> Void)? = nil
     @Environment(\.dismiss) var dismiss
 
     @State private var inputText = ""
     @State private var showSettings = false
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Not signed in warning
                 if !authService.isLoggedIn {
@@ -81,11 +83,17 @@ struct ChatView: View {
                 // Input area
                 inputBar
             }
-            .navigationTitle("AI Assistant")
+            .navigationTitle("AI Assistant (Beta)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        if let onDone {
+                            onDone()
+                        } else {
+                            dismiss()
+                        }
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     accountButton
@@ -170,7 +178,10 @@ struct ChatView: View {
             TextField("Message...", text: $inputText, axis: .vertical)
                 .textFieldStyle(.roundedBorder)
                 .lineLimit(1...4)
-                .disabled(!authService.isLoggedIn)
+                .focused($isInputFocused)
+                .onTapGesture {
+                    isInputFocused = true
+                }
                 .onSubmit { send() }
 
             Button(action: send) {
@@ -189,6 +200,7 @@ struct ChatView: View {
     private func send() {
         let trimmed = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        isInputFocused = false
         inputText = ""
         chatManager.sendMessage(trimmed)
     }

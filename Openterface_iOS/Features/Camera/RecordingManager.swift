@@ -127,7 +127,7 @@ final class RecordingManager: NSObject, ObservableObject {
            Access via Files app: On My iPhone/iPad > Openterface KVM > Recordings
         
         2️⃣ Photos App: \(configuration.saveToPhotoLibrary ? "✅ Enabled" : "❌ Disabled")
-           \(configuration.saveToPhotoLibrary ? "Screenshots also saved to your Photos library" : "Enable in settings to save to Photos")
+              \(configuration.saveToPhotoLibrary ? "Recordings and screenshots are also saved to your Photos library" : "Enable in settings to save to Photos")
         
         💡 Tips:
         • Use Files app to browse all saved files
@@ -551,13 +551,8 @@ final class RecordingManager: NSObject, ObservableObject {
                         self.lastRecordingInfo = recordingInfo
                         self.recordingState = .idle
                         
-                        // Save to photo library if enabled
-                        if self.configuration.saveToPhotoLibrary {
-                            let authStatus = PHPhotoLibrary.authorizationStatus(for: .addOnly)
-                            if authStatus == .authorized || authStatus == .limited {
-                                self.saveVideoToPhotoLibrary(url: outputURL)
-                            }
-                        }
+                        // Save to photo library if enabled.
+                        self.handleVideoPhotoLibrarySaveIfNeeded(url: outputURL)
                         
                         completion?(.success(recordingInfo))
                         
@@ -929,6 +924,41 @@ final class RecordingManager: NSObject, ObservableObject {
             } else if let error = error {
                 Logger.shared.log("Failed to save video to Photos app: \(error.localizedDescription)", level: .error, category: .camera)
             }
+        }
+    }
+
+    /// Save video to photo library when enabled, requesting permission if needed.
+    private func handleVideoPhotoLibrarySaveIfNeeded(url: URL) {
+        guard configuration.saveToPhotoLibrary else {
+            Logger.shared.log("ℹ️ Photo library saving is disabled in configuration", category: .camera)
+            return
+        }
+
+        let authStatus = PHPhotoLibrary.authorizationStatus(for: .addOnly)
+
+        switch authStatus {
+        case .authorized, .limited:
+            Logger.shared.log("🎥 Saving recording to photo library...", category: .camera)
+            saveVideoToPhotoLibrary(url: url)
+
+        case .notDetermined:
+            Logger.shared.log("🎥 Requesting photo library permission for recording save...", category: .camera)
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
+                if status == .authorized || status == .limited {
+                    Logger.shared.log("✅ Photo library permission granted, saving recording...", category: .camera)
+                    self?.saveVideoToPhotoLibrary(url: url)
+                } else {
+                    Logger.shared.log("⚠️ Photo library permission denied. Recording saved to Files app only.", level: .warning, category: .camera)
+                    Logger.shared.log("   To enable later: Settings > Privacy & Security > Photos > Openterface", category: .camera)
+                }
+            }
+
+        case .denied, .restricted:
+            Logger.shared.log("ℹ️ Recording saved to Files app only (Photo library permission denied)", category: .camera)
+            Logger.shared.log("   To enable: Settings > Privacy & Security > Photos > Openterface", category: .camera)
+
+        @unknown default:
+            Logger.shared.log("⚠️ Unknown photo library permission status", level: .warning, category: .camera)
         }
     }
     
