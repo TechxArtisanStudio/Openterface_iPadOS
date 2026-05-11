@@ -58,7 +58,7 @@ struct CameraPreviewView: UIViewRepresentable {
         }
         
         // Update the preview layer frame to match the view bounds
-        if let previewLayer = context.coordinator.previewLayer {
+        if let previewLayer = context.coordinator.previewLayer, !context.coordinator.isPinchGestureActive {
             DispatchQueue.main.async {
                 self.updatePreviewLayerTransform(previewLayer, in: uiView)
             }
@@ -135,8 +135,9 @@ struct CameraPreviewView: UIViewRepresentable {
             if let existingLayer = context.coordinator.previewLayer,
                existingLayer.session == self.cameraManager.captureSession,
                existingLayer.superlayer == view.layer {
-                // Just update the frame
-                existingLayer.frame = view.bounds
+                if !context.coordinator.isPinchGestureActive {
+                    self.updatePreviewLayerTransform(existingLayer, in: view)
+                }
                 return
             }
             
@@ -255,17 +256,9 @@ struct CameraPreviewView: UIViewRepresentable {
         pinchGesture.delegate = context.coordinator
         view.addGestureRecognizer(pinchGesture)
         
-        // Three-finger pan gesture for viewport movement when zoomed
-        let threeFingerPanGesture = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleThreeFingerPan(_:)))
-        threeFingerPanGesture.minimumNumberOfTouches = 3
-        threeFingerPanGesture.maximumNumberOfTouches = 3
-        threeFingerPanGesture.delegate = context.coordinator
-        view.addGestureRecognizer(threeFingerPanGesture)
-        
         // Store gesture references in coordinator for delegation
         context.coordinator.panGesture = panGesture
         context.coordinator.pinchGesture = pinchGesture
-        context.coordinator.threeFingerPanGesture = threeFingerPanGesture
     }
     
     private func setupDraggingIndicator(for view: UIView, context: Context) {
@@ -298,25 +291,41 @@ struct CameraPreviewView: UIViewRepresentable {
         guard let previewLayer = context.coordinator.previewLayer else { return }
         
         DispatchQueue.main.async {
-            self.updatePreviewLayerTransform(previewLayer, in: view)
+            if !context.coordinator.isPinchGestureActive {
+                self.updatePreviewLayerTransform(previewLayer, in: view)
+            }
             self.updateLayerOrientation(previewLayer)
         }
     }
     
-    internal func updatePreviewLayerTransform(_ previewLayer: AVCaptureVideoPreviewLayer, in view: UIView) {
+    /// - Parameter viewportOverride: When provided, use this viewport position instead of reading from cameraManager.
+    ///   Pass this during pinch gestures to bypass Combine pipeline timing and guarantee the correct position.
+    internal func updatePreviewLayerTransform(_ previewLayer: AVCaptureVideoPreviewLayer, in view: UIView, viewportOverride: CGPoint? = nil) {
         let viewBounds = view.bounds
         let zoomFactor = cameraManager.currentZoomFactor
-        let viewportPosition = cameraManager.viewportPosition
+        let viewportPosition = viewportOverride ?? cameraManager.viewportPosition
+
+        if let override = viewportOverride {
+            Logger.shared.debug("updatePreviewLayerTransform - zoom: \(zoomFactor), viewport (override): (\(override.x), \(override.y))", category: .ui)
+        } else {
+            Logger.shared.debug("updatePreviewLayerTransform - zoom: \(zoomFactor), viewport: (\(viewportPosition.x), \(viewportPosition.y))", category: .ui)
+        }
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
+        previewLayer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        previewLayer.bounds = CGRect(origin: .zero, size: viewBounds.size)
+
         if zoomFactor > 1.0 {
-            let zoomedSize = CGSize(width: viewBounds.width * zoomFactor, height: viewBounds.height * zoomFactor)
-            previewLayer.frame = CGRect(origin: .zero, size: zoomedSize)
-            previewLayer.position = CGPoint(x: viewBounds.midX + viewportPosition.x, y: viewBounds.midY + viewportPosition.y)
+            previewLayer.position = CGPoint(
+                x: viewBounds.midX - viewportPosition.x * zoomFactor,
+                y: viewBounds.midY - viewportPosition.y * zoomFactor
+            )
+            previewLayer.transform = CATransform3DMakeScale(zoomFactor, zoomFactor, 1.0)
         } else {
-            previewLayer.frame = viewBounds
+            previewLayer.position = CGPoint(x: viewBounds.midX, y: viewBounds.midY)
+            previewLayer.transform = CATransform3DIdentity
         }
 
         CATransaction.commit()
@@ -376,8 +385,9 @@ extension CameraPreviewView {
         // Gesture references for delegation
         var panGesture: UIPanGestureRecognizer?
         var pinchGesture: UIPinchGestureRecognizer?
-        var threeFingerPanGesture: UIPanGestureRecognizer?
         var draggingIndicatorLabel: UILabel?
+        var panGestureWasViewportGesture: Bool = false
+        var isPinchGestureActive: Bool = false
         
         // Track pan gesture start position (internal access for TouchEnabledView)
         var panStartPosition: CGPoint = .zero
@@ -389,6 +399,14 @@ extension CameraPreviewView {
         
         // Track initial touch position from touchesBegan (for Apple Pencil)
         var initialTouchPosition: CGPoint? = nil
+        
+        // Track zoom factor, viewport, and pinch midpoint at the start of a pinch gesture
+        var pinchStartZoomFactor: CGFloat = 1.0
+        var pinchStartViewport: CGPoint = .zero
+        var pinchCenter: CGPoint = .zero
+        var lastPinchZoomFactor: CGFloat = 1.0
+        var lastPinchViewport: CGPoint = .zero
+        var lastPinchCenter: CGPoint = .zero
         
         // Touch tracking for drag end detection (internal access for TouchEnabledView)
         var isDragging: Bool = false
@@ -519,6 +537,11 @@ extension CameraPreviewView {
             
             // Single finger pan in zoom mode - move viewport
             if isZoomMode && numberOfTouches == 1 {
+                // Suppress if pinch is active (finger lifted during pinch drops touch count to 1)
+                if let pinch = pinchGesture, pinch.state == .began || pinch.state == .changed {
+                    Logger.shared.debug("Single-finger viewport pan suppressed - pinch gesture active", category: .ui)
+                    return
+                }
                 Logger.shared.debug("Single-finger pan in zoom mode - handling as viewport pan", category: .ui)
                 
                 // Only allow panning when zoomed in
@@ -529,19 +552,22 @@ extension CameraPreviewView {
                 
                 switch gesture.state {
                 case .began:
+                    panGestureWasViewportGesture = true
                     Logger.shared.debug("Single-finger viewport pan began in zoom mode", category: .ui)
                     // Store the starting viewport and touch position for absolute tracking
                     panStartViewport = parent.cameraManager.viewportPosition
                     panStartTouchPosition = currentLocation
 
                 case .changed:
-                    // Calculate viewport from absolute touch delta — no accumulated state
+                    // Calculate viewport from absolute touch delta in unscaled content coordinates.
+                    // Dragging the content right moves the visible viewport left.
                     let dx = currentLocation.x - panStartTouchPosition.x
                     let dy = currentLocation.y - panStartTouchPosition.y
+                    let zoomFactor = parent.cameraManager.currentZoomFactor
 
                     if let view = gesture.view {
                         parent.cameraManager.setViewportPosition(
-                            CGPoint(x: panStartViewport.x + dx, y: panStartViewport.y + dy),
+                            CGPoint(x: panStartViewport.x - dx / zoomFactor, y: panStartViewport.y - dy / zoomFactor),
                             viewBounds: view.bounds
                         )
 
@@ -556,10 +582,17 @@ extension CameraPreviewView {
                     
                 case .ended, .cancelled:
                     Logger.shared.debug("Single-finger viewport pan ended in zoom mode", category: .ui)
+                    panGestureWasViewportGesture = false
                     
                 default:
                     break
                 }
+                return
+            }
+
+            if isZoomMode && numberOfTouches == 0 && (gesture.state == .ended || gesture.state == .cancelled || gesture.state == .failed) {
+                Logger.shared.debug("Pan end ignored in zoom mode - viewport/pinch gesture cleanup", category: .ui)
+                panGestureWasViewportGesture = false
                 return
             }
             
@@ -650,7 +683,7 @@ extension CameraPreviewView {
             
             Logger.shared.debug("Two-finger pan - state: \(gesture.state.rawValue), location: \(currentLocation), translation: \(translation)", category: .ui)
             
-            // In zoom mode, two-finger pan moves viewport (like three-finger pan in normal mode)
+            // In zoom mode, two-finger pan can also move the viewport when not pinching.
             if parent.appCoordinator.isZoomMode {
                 Logger.shared.debug("Two-finger pan in zoom mode - handling as viewport pan", category: .ui)
                 
@@ -665,7 +698,13 @@ extension CameraPreviewView {
                     Logger.shared.debug("Two-finger viewport pan began in zoom mode", category: .ui)
                     
                 case .changed:
-                    // Use translation directly for natural panning
+                    // Skip viewport pan while a pinch is active — finger positions shift
+                    // slightly during pinch causing micro-jitter in the viewport.
+                    if let pinch = pinchGesture, pinch.state == .began || pinch.state == .changed {
+                        gesture.setTranslation(.zero, in: gesture.view)
+                        Logger.shared.debug("Two-finger viewport pan suppressed - pinch gesture active", category: .ui)
+                        return
+                    }
                     
                     // Update viewport position through camera manager
                     if let view = gesture.view {
@@ -742,13 +781,17 @@ extension CameraPreviewView {
                     return
                 }
                 
-                // Calculate the offset needed to center the tapped point
+                // Calculate the tapped content point and make it the visible viewport center.
                 let viewCenter = CGPoint(x: view.bounds.width / 2, y: view.bounds.height / 2)
                 let offset = CGPoint(x: location.x - viewCenter.x, y: location.y - viewCenter.y)
+                let zoomFactor = parent.cameraManager.currentZoomFactor
+                let currentViewport = parent.cameraManager.viewportPosition
+                let targetViewport = CGPoint(
+                    x: currentViewport.x + offset.x / zoomFactor,
+                    y: currentViewport.y + offset.y / zoomFactor
+                )
                 
-                // Use the offset directly: tap right to move viewport right
-                // Update viewport position
-                parent.cameraManager.updateViewportPosition(offset, viewBounds: view.bounds)
+                parent.cameraManager.setViewportPosition(targetViewport, viewBounds: view.bounds)
                 
                 // Immediately update the preview layer transform without animation
                 if let previewLayer = self.previewLayer {
@@ -887,87 +930,107 @@ extension CameraPreviewView {
             
             switch gesture.state {
             case .began:
-                Logger.shared.debug("Pinch gesture began with scale: \(gesture.scale)", category: .ui)
-                Logger.shared.debug("Current zoom factor at start: \(parent.cameraManager.currentZoomFactor)", category: .ui)
+                isPinchGestureActive = true
+                // Capture the zoom level, viewport, and pinch midpoint at gesture start
+                pinchStartZoomFactor = parent.cameraManager.currentZoomFactor
+                pinchStartViewport = parent.cameraManager.viewportPosition
+                if let view = gesture.view {
+                    pinchCenter = currentPinchCenter(for: gesture, in: view)
+                }
+                lastPinchZoomFactor = pinchStartZoomFactor
+                lastPinchViewport = pinchStartViewport
+                lastPinchCenter = pinchCenter
+                Logger.shared.debug("Pinch gesture began - start zoom: \(pinchStartZoomFactor), start viewport: \(pinchStartViewport), pinch center: \(pinchCenter)", category: .ui)
                 
             case .changed:
-                // Calculate new zoom factor based on current zoom and pinch scale
-                let currentZoom = parent.cameraManager.currentZoomFactor
-                let newZoomFactor = currentZoom * gesture.scale
-                
-                Logger.shared.debug("Pinch calculation - current: \(currentZoom), scale: \(gesture.scale), new: \(newZoomFactor)", category: .ui)
-                
-                // Apply zoom through camera manager
-                parent.cameraManager.setZoomFactor(newZoomFactor)
-                
-                // Immediately update the preview layer transform
-                if let previewLayer = self.previewLayer, let view = gesture.view {
-                    DispatchQueue.main.async {
-                        self.parent.updatePreviewLayerTransform(previewLayer, in: view)
-                    }
+                guard let view = gesture.view else { return }
+                guard gesture.numberOfTouches >= 2 else {
+                    Logger.shared.debug("Pinch changed ignored - fewer than two touches remain", category: .ui)
+                    return
                 }
+
+                let rawPinchMidpoint = currentPinchCenter(for: gesture, in: view)
+                let midpointDelta = CGPoint(
+                    x: rawPinchMidpoint.x - lastPinchCenter.x,
+                    y: rawPinchMidpoint.y - lastPinchCenter.y
+                )
+                let midpointMovement = hypot(midpointDelta.x, midpointDelta.y)
+                let midpointDeadZone: CGFloat = 1.5
+                let currentPinchMidpoint = midpointMovement < midpointDeadZone ? lastPinchCenter : rawPinchMidpoint
                 
-                // Reset gesture scale to prevent compounding
-                gesture.scale = 1.0
+                // Multiply the gesture-start zoom by cumulative scale to get the absolute target zoom.
+                let requestedZoomFactor = pinchStartZoomFactor * gesture.scale
                 
-                Logger.shared.debug("Pinch changed - applied zoom factor: \(newZoomFactor), current published: \(parent.cameraManager.currentZoomFactor)", category: .ui)
+                Logger.shared.debug("Pinch calculation - start: \(pinchStartZoomFactor), scale: \(gesture.scale), requested: \(requestedZoomFactor)", category: .ui)
+                
+                // Apply zoom through camera manager (clamps internally to min/max)
+                parent.cameraManager.setZoomFactor(requestedZoomFactor)
+                
+                // Read back the ACTUAL clamped zoom — using unclamped value in the formula
+                // causes ratio/maxPan to be wrong, producing out-of-bounds viewport values.
+                let actualZoomFactor = parent.cameraManager.currentZoomFactor
+                
+                // viewportPosition is the unscaled content point shown at screen center.
+                // The content under a screen offset is: viewport + screenOffset / zoom.
+                // Keep the content under the moving pinch midpoint stable between events.
+                let viewCenter = CGPoint(x: view.bounds.midX, y: view.bounds.midY)
+                let previousPinchOffset = CGPoint(x: lastPinchCenter.x - viewCenter.x, y: lastPinchCenter.y - viewCenter.y)
+                let currentPinchOffset = CGPoint(x: currentPinchMidpoint.x - viewCenter.x, y: currentPinchMidpoint.y - viewCenter.y)
+                let targetViewport = CGPoint(
+                    x: lastPinchViewport.x + previousPinchOffset.x / max(lastPinchZoomFactor, 0.001) - currentPinchOffset.x / max(actualZoomFactor, 0.001),
+                    y: lastPinchViewport.y + previousPinchOffset.y / max(lastPinchZoomFactor, 0.001) - currentPinchOffset.y / max(actualZoomFactor, 0.001)
+                )
+                
+                // Clamp in unscaled content coordinates for the actual zoom level.
+                let maxPanX = view.bounds.width * (actualZoomFactor - 1.0) / (2.0 * actualZoomFactor)
+                let maxPanY = view.bounds.height * (actualZoomFactor - 1.0) / (2.0 * actualZoomFactor)
+                let clampedViewport = CGPoint(
+                    x: max(-maxPanX, min(maxPanX, targetViewport.x)),
+                    y: max(-maxPanY, min(maxPanY, targetViewport.y))
+                )
+                
+                parent.cameraManager.setViewportPosition(clampedViewport, viewBounds: view.bounds)
+
+                pinchCenter = currentPinchMidpoint
+                lastPinchZoomFactor = actualZoomFactor
+                lastPinchViewport = clampedViewport
+                lastPinchCenter = currentPinchMidpoint
+                
+                Logger.shared.debug("Pinch changed - actualZoom: \(actualZoomFactor), viewportCenter: (\(clampedViewport.x), \(clampedViewport.y)), previousOffset: (\(previousPinchOffset.x), \(previousPinchOffset.y)), currentOffset: (\(currentPinchOffset.x), \(currentPinchOffset.y)), midpointMovement: \(midpointMovement)", category: .ui)
+                
+                // Render immediately with exact computed values — bypasses Combine pipeline timing
+                if let previewLayer = self.previewLayer {
+                    self.parent.updatePreviewLayerTransform(previewLayer, in: view, viewportOverride: clampedViewport)
+                }
                 
             case .ended, .cancelled:
                 Logger.shared.debug("Pinch gesture ended - final zoom: \(parent.cameraManager.currentZoomFactor)", category: .ui)
+                isPinchGestureActive = false
+                pinchStartZoomFactor = parent.cameraManager.currentZoomFactor
+                pinchStartViewport = parent.cameraManager.viewportPosition
+                lastPinchZoomFactor = pinchStartZoomFactor
+                lastPinchViewport = pinchStartViewport
+                if let view = gesture.view {
+                    pinchCenter = gesture.location(in: view)
+                    if let previewLayer = self.previewLayer {
+                        self.parent.updatePreviewLayerTransform(previewLayer, in: view)
+                    }
+                }
+                lastPinchCenter = pinchCenter
                 
             default:
                 break
             }
         }
-        
-        @objc func handleThreeFingerPan(_ gesture: UIPanGestureRecognizer) {
-            Logger.shared.debug("Three-finger pan gesture detected - state: \(gesture.state.rawValue)", category: .ui)
-            
-            // Only allow three-finger panning in zoom mode
-            if !parent.appCoordinator.isZoomMode {
-                Logger.shared.debug("Three-finger pan ignored - zoom mode not active", category: .ui)
-                return
+
+        private func currentPinchCenter(for gesture: UIPinchGestureRecognizer, in view: UIView) -> CGPoint {
+            guard gesture.numberOfTouches >= 2 else {
+                return gesture.location(in: view)
             }
-            
-            // Only allow panning when zoomed in
-            guard parent.cameraManager.currentZoomFactor > 1.0 else {
-                Logger.shared.debug("Three-finger pan ignored - not zoomed in", category: .ui)
-                return
-            }
-            
-            switch gesture.state {
-            case .began:
-                Logger.shared.debug("Three-finger pan began", category: .ui)
-                
-            case .changed:
-                let translation = gesture.translation(in: gesture.view)
-                
-                // Use translation directly for natural panning
-                
-                // Update viewport position through camera manager
-                if let view = gesture.view {
-                    parent.cameraManager.updateViewportPosition(translation, viewBounds: view.bounds)
-                    
-                    // Immediately update the preview layer transform without animation
-                    if let previewLayer = self.previewLayer {
-                        CATransaction.begin()
-                        CATransaction.setDisableActions(true) // Disable animations
-                        self.parent.updatePreviewLayerTransform(previewLayer, in: view)
-                        CATransaction.commit()
-                    }
-                }
-                
-                // Reset translation to get incremental changes
-                gesture.setTranslation(.zero, in: gesture.view)
-                
-                Logger.shared.debug("Three-finger pan translation: \(translation)", category: .ui)
-                
-            case .ended, .cancelled:
-                Logger.shared.debug("Three-finger pan ended", category: .ui)
-                
-            default:
-                break
-            }
+
+            let firstTouch = gesture.location(ofTouch: 0, in: view)
+            let secondTouch = gesture.location(ofTouch: 1, in: view)
+            return CGPoint(x: (firstTouch.x + secondTouch.x) / 2.0, y: (firstTouch.y + secondTouch.y) / 2.0)
         }
         
         deinit {

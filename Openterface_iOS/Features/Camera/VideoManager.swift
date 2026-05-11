@@ -754,13 +754,17 @@ private extension VideoManager {
 extension VideoManager {
     /// Set zoom factor for the current camera device
     func setZoomFactor(_ zoomFactor: CGFloat) {
-        guard let device = selectedCamera,
-              device.activeFormat.videoMaxZoomFactor >= zoomFactor else {
-            print("⚠️ Zoom factor \(zoomFactor) exceeds device maximum")
+        guard let device = selectedCamera else {
+            print("⚠️ Cannot set zoom factor \(zoomFactor) - no selected camera")
             return
         }
 
         let clampedZoom = max(minZoomFactor, min(maxZoomFactor, zoomFactor))
+
+        guard device.activeFormat.videoMaxZoomFactor >= clampedZoom else {
+            print("⚠️ Zoom factor \(clampedZoom) exceeds device maximum")
+            return
+        }
 
         print("🔍 setZoomFactor called - requested: \(zoomFactor), clamped: \(clampedZoom), current: \(currentZoomFactor)")
 
@@ -829,17 +833,16 @@ extension VideoManager {
             return
         }
 
-        // The layer frame is viewBounds × zoomFactor, centered at (midX + viewport, midY + viewport).
-        // For resizeAspectFill, the valid pan range is half the layer excess:
-        //   maxPan = viewSize × (zoom - 1) / 2
+        // viewportPosition is the unscaled content point shown at screen center.
+        // The valid range is half of the content area not visible at the current zoom:
+        //   maxPan = viewSize × (zoom - 1) / (2 × zoom)
         let zoomScale = currentZoomFactor
-        let maxPanX = viewBounds.width * (zoomScale - 1.0) / 2.0
-        let maxPanY = viewBounds.height * (zoomScale - 1.0) / 2.0
+        let maxPanX = viewBounds.width * (zoomScale - 1.0) / (2.0 * zoomScale)
+        let maxPanY = viewBounds.height * (zoomScale - 1.0) / (2.0 * zoomScale)
 
-        // Use 1:1 finger movement mapping — each delta maps directly to viewport
-        // since setTranslation(.zero) is called after each update
-        let newX = viewportPosition.x + translation.x
-        let newY = viewportPosition.y + translation.y
+        // Dragging the content right moves the visible viewport left.
+        let newX = viewportPosition.x - translation.x / zoomScale
+        let newY = viewportPosition.y - translation.y / zoomScale
 
         // Clamp the position to valid bounds (prevents showing black areas)
         let clampedX = max(-maxPanX, min(maxPanX, newX))
@@ -860,14 +863,15 @@ extension VideoManager {
         }
 
         let zoomScale = currentZoomFactor
-        let maxPanX = viewBounds.width * (zoomScale - 1.0) / 2.0
-        let maxPanY = viewBounds.height * (zoomScale - 1.0) / 2.0
+        let maxPanX = viewBounds.width * (zoomScale - 1.0) / (2.0 * zoomScale)
+        let maxPanY = viewBounds.height * (zoomScale - 1.0) / (2.0 * zoomScale)
 
         let clampedX = max(-maxPanX, min(maxPanX, position.x))
         let clampedY = max(-maxPanY, min(maxPanY, position.y))
 
         viewportPosition = CGPoint(x: clampedX, y: clampedY)
         maxViewportOffset = CGPoint(x: maxPanX, y: maxPanY)
+        print("🔍 setViewportPosition - requested: (\(position.x), \(position.y)), clamped: (\(clampedX), \(clampedY)), zoom: \(currentZoomFactor)")
     }
 
     /// Reset viewport position to center

@@ -155,8 +155,6 @@ struct ControlsView: View {
                     label: "Zoom",
                     action: {
                         appCoordinator.isZoomMode.toggle()
-                        // Reset viewport to center when toggling zoom mode
-                        appCoordinator.cameraManager.resetViewport()
                     },
                     isActive: appCoordinator.isZoomMode
                 )
