@@ -45,9 +45,7 @@ struct CameraPreviewView: UIViewRepresentable {
         
         #if targetEnvironment(simulator)
         // On simulator, always try to setup the mock camera
-        if TARGET_OS_SIMULATOR != 0 {
-            setupPreviewLayer(in: uiView, context: context)
-        }
+        setupPreviewLayer(in: uiView, context: context)
         #endif
         
         // Start session if it's not running and we have everything needed
@@ -101,33 +99,31 @@ struct CameraPreviewView: UIViewRepresentable {
         DispatchQueue.main.async {
             #if targetEnvironment(simulator)
             // Check if running on simulator - use mock camera
-            if TARGET_OS_SIMULATOR != 0 {
-                print("📱 [CameraPreview] Running on simulator - attempting to use mock camera")
-                
-                // Remove existing layers
-                if let existingLayer = context.coordinator.simulatorLayer {
-                    existingLayer.removeFromSuperlayer()
-                    context.coordinator.simulatorLayer = nil
-                }
-                if let existingLayer = context.coordinator.previewLayer {
-                    existingLayer.removeFromSuperlayer()
-                    context.coordinator.previewLayer = nil
-                }
-                
-                // Get simulator preview layer
-                if let simulatorLayer = self.cameraManager.getSimulatorPreviewLayer() {
-                    print("✅ [CameraPreview] Got simulator preview layer")
-                    simulatorLayer.frame = view.bounds
-                    view.layer.addSublayer(simulatorLayer)
-                    context.coordinator.simulatorLayer = simulatorLayer
-                    
-                    // Force layout update
-                    view.setNeedsLayout()
-                    view.layoutIfNeeded()
-                    return
-                } else {
-                    print("❌ [CameraPreview] Failed to get simulator preview layer")
-                }
+            print("📱 [CameraPreview] Running on simulator - attempting to use mock camera")
+
+            // Remove existing layers
+            if let existingLayer = context.coordinator.simulatorLayer {
+                existingLayer.removeFromSuperlayer()
+                context.coordinator.simulatorLayer = nil
+            }
+            if let existingLayer = context.coordinator.previewLayer {
+                existingLayer.removeFromSuperlayer()
+                context.coordinator.previewLayer = nil
+            }
+
+            // Get simulator preview layer
+            if let simulatorLayer = self.cameraManager.getSimulatorPreviewLayer() {
+                print("✅ [CameraPreview] Got simulator preview layer")
+                simulatorLayer.frame = view.bounds
+                view.layer.addSublayer(simulatorLayer)
+                context.coordinator.simulatorLayer = simulatorLayer
+
+                // Force layout update
+                view.setNeedsLayout()
+                view.layoutIfNeeded()
+                return
+            } else {
+                print("❌ [CameraPreview] Failed to get simulator preview layer")
             }
             #endif
             

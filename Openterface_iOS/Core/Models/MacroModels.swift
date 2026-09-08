@@ -5,13 +5,12 @@
 
 import Foundation
 
-/// Target operating system for macro key sequences
+/// Target operating system running on the controlled (target) machine.
+/// Mirrors KeyCmd's 3-system model: Windows / macOS / Linux.
 enum MacroTargetSystem: String, Codable, CaseIterable, Identifiable {
     case macOS
     case windows
     case linux
-    case iOS
-    case android
 
     var id: String { rawValue }
 
@@ -20,8 +19,6 @@ enum MacroTargetSystem: String, Codable, CaseIterable, Identifiable {
         case .macOS: return "macOS"
         case .windows: return "Windows"
         case .linux: return "Linux"
-        case .iOS: return "iOS"
-        case .android: return "Android"
         }
     }
 
@@ -30,9 +27,52 @@ enum MacroTargetSystem: String, Codable, CaseIterable, Identifiable {
         case .macOS: return "applelogo"
         case .windows: return "pc"
         case .linux: return "terminal"
-        case .iOS: return "iphone"
-        case .android: return "phone.fill"
         }
+    }
+
+    // MARK: - Keyboard semantics (KeyCmd-aligned)
+
+    /// True for macOS — the only target that uses the ⌘ Command key as primary.
+    var isMacStyle: Bool { self == .macOS }
+
+    /// Primary modifier used by cross-platform semantic shortcuts
+    /// (Select All / Copy / Cut / Paste / Save / Undo …).
+    var primaryModifier: String { isMacStyle ? "Cmd" : "Ctrl" }
+
+    /// Display name of the GUI key (HID 0x08) on each target's physical keyboard.
+    var guiKeyName: String {
+        switch self {
+        case .macOS: return "Cmd"
+        case .windows: return "Win"
+        case .linux: return "Super"
+        }
+    }
+
+    /// SF-Symbol-friendly label for the GUI key.
+    var guiKeyLabel: String {
+        switch self {
+        case .macOS: return "⌘"
+        case .windows: return "⊞"
+        case .linux: return "❖"
+        }
+    }
+
+    /// Codable decoding with backward-compatible fallback for legacy values
+    /// ("iOS" / "android" persisted by older builds) → treated as .windows
+    /// (Ctrl-style), matching KeyCmd's non-Mac semantics.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        switch raw.lowercased() {
+        case "macos": self = .macOS
+        case "windows", "ios": self = .windows
+        case "linux", "android": self = .linux
+        default: self = .windows
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
     }
 }
 

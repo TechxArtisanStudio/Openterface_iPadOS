@@ -41,11 +41,22 @@ final class AppCoordinator: ObservableObject {
     @Published var showMacroPanel = false
     @Published var showChatPanel = false
     @Published var showLoginSheet = false
+    @Published var showShortcutHub = false
     @Published var targetOS: MacroTargetSystem = .windows
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private let targetOSKey = "TargetOS"
+
+    // MARK: - Static Helpers
+    private static func parseTargetOS(_ raw: String) -> MacroTargetSystem {
+        switch raw.lowercased() {
+        case "macos": return .macOS
+        case "ios": return .macOS   // iOS legacy → macOS (same Cmd style)
+        case "android": return .linux // Android legacy → linux (Ctrl style)
+        default: return .windows
+        }
+    }
     
     // MARK: - Initialization
     init() {
@@ -67,10 +78,9 @@ final class AppCoordinator: ObservableObject {
         // Initialize macro manager
         self.macroManager = MacroInputManager(keyboardManager: keyboardManager)
 
-        // Load saved target OS
-        if let savedOS = UserDefaults.standard.string(forKey: targetOSKey),
-           let target = MacroTargetSystem(rawValue: savedOS) {
-            self.targetOS = target
+        // Load saved target OS (fall back for legacy iOS/Android persisted values)
+        if let savedOS = UserDefaults.standard.string(forKey: targetOSKey) {
+            self.targetOS = Self.parseTargetOS(savedOS)
         }
 
         setupBindings()
@@ -215,9 +225,9 @@ final class AppCoordinator: ObservableObject {
         }
     }
 
-    /// Cycle target OS: Windows -> macOS -> Linux -> iOS -> Android -> Windows
+    /// Cycle target OS: Windows -> macOS -> Linux -> Windows
     func cycleTargetOS() {
-        let allOS: [MacroTargetSystem] = [.windows, .macOS, .linux, .iOS, .android]
+        let allOS: [MacroTargetSystem] = [.windows, .macOS, .linux]
         guard let currentIndex = allOS.firstIndex(of: targetOS) else {
             targetOS = .windows
             UserDefaults.standard.set(targetOS.rawValue, forKey: targetOSKey)

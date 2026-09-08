@@ -180,7 +180,7 @@ final class RecordingManager: NSObject, ObservableObject {
         
         #if targetEnvironment(simulator)
         // Handle simulator mode separately
-        if TARGET_OS_SIMULATOR != 0 && captureSession == nil {
+        if captureSession == nil {
             Logger.shared.log("📱 [Simulator] Starting mock video recording", category: .camera)
             startSimulatorRecording()
             return
@@ -491,7 +491,7 @@ final class RecordingManager: NSObject, ObservableObject {
         
         #if targetEnvironment(simulator)
         // Handle simulator mode separately
-        if TARGET_OS_SIMULATOR != 0 && captureSession == nil {
+        if captureSession == nil {
             Logger.shared.log("📱 [Simulator] Stopping mock video recording", category: .camera)
             stopSimulatorRecording(completion: completion)
             return
@@ -580,7 +580,7 @@ final class RecordingManager: NSObject, ObservableObject {
         
         #if targetEnvironment(simulator)
         // Handle simulator mode separately
-        if TARGET_OS_SIMULATOR != 0 && captureSession == nil {
+        if captureSession == nil {
             Logger.shared.log("📱 [Simulator] Capturing screenshot from mock camera", category: .camera)
             captureSimulatorScreenshot(completion: completion)
             return

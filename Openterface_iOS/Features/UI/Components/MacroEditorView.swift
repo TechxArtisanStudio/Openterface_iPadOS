@@ -203,7 +203,6 @@ struct MacroEditorView: View {
         switch targetSystem {
         case .macOS: return "Cmd"
         case .windows, .linux: return "Win"
-        case .iOS, .android: return "Ctrl"
         }
     }
 
@@ -211,7 +210,6 @@ struct MacroEditorView: View {
         switch targetSystem {
         case .macOS: return "CMD"
         case .windows, .linux: return "WIN"
-        case .iOS, .android: return "CTRL"
         }
     }
 
@@ -270,26 +268,6 @@ struct MacroEditorView: View {
                 ("<ALT><TAB></ALT>", "Alt+Tab"),
                 ("<ALT><F2></ALT>", "Run Cmd"),
                 ("<CTRL><ALT>T</CTRL>", "Terminal"),
-            ]
-        case .iOS:
-            return [
-                ("<CTRL>c</CTRL>", "Ctrl+C"),
-                ("<CTRL>v</CTRL>", "Ctrl+V"),
-                ("<CTRL>x</CTRL>", "Ctrl+X"),
-                ("<CTRL>a</CTRL>", "Ctrl+A"),
-                ("<CTRL>s</CTRL>", "Ctrl+S"),
-                ("<CTRL>z</CTRL>", "Ctrl+Z"),
-                ("<ALT><TAB></ALT>", "Alt+Tab"),
-            ]
-        case .android:
-            return [
-                ("<CTRL>c</CTRL>", "Ctrl+C"),
-                ("<CTRL>v</CTRL>", "Ctrl+V"),
-                ("<CTRL>x</CTRL>", "Ctrl+X"),
-                ("<CTRL>a</CTRL>", "Ctrl+A"),
-                ("<CTRL>s</CTRL>", "Ctrl+S"),
-                ("<CTRL>z</CTRL>", "Ctrl+Z"),
-                ("<ALT><TAB></ALT>", "Alt+Tab"),
             ]
         }
     }

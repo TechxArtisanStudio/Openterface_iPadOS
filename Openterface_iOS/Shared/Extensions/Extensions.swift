@@ -18,7 +18,7 @@ extension String {
     
     /// Check if string represents a modifier key
     var isModifierKey: Bool {
-        return ["Ctrl", "Shift", "Alt", "Cmd", "Caps"].contains(self)
+        return ["Ctrl", "Shift", "Alt", "Cmd", "Win", "Super", "Caps"].contains(self)
     }
     
     /// Get display name for special keys
@@ -30,6 +30,8 @@ extension String {
         case "Ctrl": return "⌃"
         case "Alt": return "⌥"
         case "Cmd": return "⌘"
+        case "Win": return "⊞"
+        case "Super": return "❖"
         case "Caps": return "⇪"
         case "Space": return "␣"
         case "Tab": return "⇥"

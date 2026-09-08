@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A11CA7E0000000000000B01 /* ShortcutProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F01 /* ShortcutProfile.swift */; };
+		0A11CA7E0000000000000B02 /* ShortcutProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F02 /* ShortcutProfileManager.swift */; };
+		0A11CA7E0000000000000B03 /* ShortcutHubComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F03 /* ShortcutHubComponents.swift */; };
+		0A11CA7E0000000000000B04 /* NumpadGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F04 /* NumpadGridView.swift */; };
+		0A11CA7E0000000000000B05 /* ShortcutEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F05 /* ShortcutEditorSheet.swift */; };
+		0A11CA7E0000000000000B06 /* ShortcutHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F06 /* ShortcutHubView.swift */; };
+		0A11CA7E0000000000000B07 /* Profiles in Resources */ = {isa = PBXBuildFile; fileRef = 0A11CA7E0000000000000F07 /* Profiles */; };
 		6B148F262EA61EBE00715D42 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F252EA61EBE00715D42 /* Logger.swift */; };
 		6B148F2E2EA72DBB00715D42 /* VideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F2D2EA72DBB00715D42 /* VideoManager.swift */; };
 		6B148F2F2EA72DBB00715D42 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B148F2C2EA72DBB00715D42 /* AudioManager.swift */; };
@@ -49,6 +56,7 @@
 		ED19379E509540F9A8AFD411 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A499DE59EC0B4A02BB1A51C0 /* KeychainService.swift */; };
 		A86E2B10FC014CFDBBB464AE /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7956E09C7C47D681A5FA8F /* ChatModels.swift */; };
 		72CFB2DFA02B4C0F99F4A2A1 /* MacroModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */; };
+		83B052493B824FA595AD7B7C /* ModifierTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 009E640E072544F78E230F13 /* ModifierTranslator.swift */; };
 		F49387517EA9476BB35F5981 /* ChatManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D9F06A54AB4C1E9505E2AB /* ChatManager.swift */; };
 		54F1A891BB854C8ABB4A8280 /* ChatScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D79B2172BA3A47BA8F821D68 /* ChatScreenCaptureService.swift */; };
 		93BBE49A256E4695B1D20394 /* ChatConversationBuilderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BAFAB11D7A46CBAC10BCC6 /* ChatConversationBuilderService.swift */; };
@@ -80,6 +88,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A11CA7E0000000000000F01 /* ShortcutProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutProfile.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F02 /* ShortcutProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutProfileManager.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F03 /* ShortcutHubComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutHubComponents.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F04 /* NumpadGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumpadGridView.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F05 /* ShortcutEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutEditorSheet.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F06 /* ShortcutHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutHubView.swift; sourceTree = "<group>"; };
+		0A11CA7E0000000000000F07 /* Profiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Profiles; sourceTree = "<group>"; };
 		6B148F252EA61EBE00715D42 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		6B148F2C2EA72DBB00715D42 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		6B148F2D2EA72DBB00715D42 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
@@ -125,6 +140,7 @@
 		A499DE59EC0B4A02BB1A51C0 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Security/KeychainService.swift; sourceTree = SOURCE_ROOT; };
 		6D7956E09C7C47D681A5FA8F /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Models/ChatModels.swift; sourceTree = SOURCE_ROOT; };
 		E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Models/MacroModels.swift; sourceTree = SOURCE_ROOT; };
+		009E640E072544F78E230F13 /* ModifierTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Core/Utils/ModifierTranslator.swift; sourceTree = SOURCE_ROOT; };
 		D0D9F06A54AB4C1E9505E2AB /* ChatManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/ChatManager.swift; sourceTree = SOURCE_ROOT; };
 		D79B2172BA3A47BA8F821D68 /* ChatScreenCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/Services/ChatScreenCaptureService.swift; sourceTree = SOURCE_ROOT; };
 		88BAFAB11D7A46CBAC10BCC6 /* ChatConversationBuilderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Openterface_iOS/Features/AI/Services/ChatConversationBuilderService.swift; sourceTree = SOURCE_ROOT; };
@@ -163,6 +179,60 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A11CA7E0000000000000C01 /* ShortcutHub */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000C02 /* Models */,
+				0A11CA7E0000000000000C03 /* Managers */,
+				0A11CA7E0000000000000C04 /* View */,
+				0A11CA7E0000000000000F07 /* Profiles */,
+			);
+			path = ShortcutHub;
+			sourceTree = "<group>";
+		};
+		0A11CA7E0000000000000C02 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000F01 /* ShortcutProfile.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		0A11CA7E0000000000000C03 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000F02 /* ShortcutProfileManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		0A11CA7E0000000000000C04 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000F06 /* ShortcutHubView.swift */,
+				0A11CA7E0000000000000C05 /* Components */,
+				0A11CA7E0000000000000C06 /* Sheets */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		0A11CA7E0000000000000C05 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000F03 /* ShortcutHubComponents.swift */,
+				0A11CA7E0000000000000F04 /* NumpadGridView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		0A11CA7E0000000000000C06 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				0A11CA7E0000000000000F05 /* ShortcutEditorSheet.swift */,
+			);
+			path = Sheets;
+			sourceTree = "<group>";
+		};
 		BF0643E82E3E5910009F04D1 = {
 			isa = PBXGroup;
 			children = (
@@ -196,6 +266,7 @@
 				25DEF48A67A24CF782494773 /* Security */,
 				6D7956E09C7C47D681A5FA8F /* ChatModels.swift */,
 				E4B9E13D768F47F58D33ABA4 /* MacroModels.swift */,
+				009E640E072544F78E230F13 /* ModifierTranslator.swift */,
 				2523B43B0FD0484FBC5B6FD0 /* AI */,
 				C80D235D1D864A23BEDD38F4 /* MacroInputManager.swift */,
 			);
@@ -261,6 +332,7 @@
 		BF4ED0402E3F45910045D619 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				0A11CA7E0000000000000C01 /* ShortcutHub */,
 				6B148F352EA7A86C00715D42 /* VideoSettingsView.swift */,
 				BF4ED0412E3F45910045D619 /* UI */,
 				BF4ED0482E3F45910045D619 /* Input */,
@@ -549,6 +621,7 @@
 			files = (
 				BF0643FC2E3E5917009F04D1 /* Preview Assets.xcassets in Resources */,
 				BF0643F92E3E5917009F04D1 /* Assets.xcassets in Resources */,
+				0A11CA7E0000000000000B07 /* Profiles in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -577,6 +650,7 @@
 				ED19379E509540F9A8AFD411 /* KeychainService.swift in Sources */,
 				A86E2B10FC014CFDBBB464AE /* ChatModels.swift in Sources */,
 				72CFB2DFA02B4C0F99F4A2A1 /* MacroModels.swift in Sources */,
+				83B052493B824FA595AD7B7C /* ModifierTranslator.swift in Sources */,
 				F49387517EA9476BB35F5981 /* ChatManager.swift in Sources */,
 				54F1A891BB854C8ABB4A8280 /* ChatScreenCaptureService.swift in Sources */,
 				93BBE49A256E4695B1D20394 /* ChatConversationBuilderService.swift in Sources */,
@@ -621,6 +695,12 @@
 				BF4ED03E2E3F45680045D619 /* ConnectionProtocol.swift in Sources */,
 				BF4ED0712E3F9B3D0045D619 /* HIDUtils.swift in Sources */,
 				BF4ED0722E3F9B3D0045D619 /* ExternalKeyboardHandler.swift in Sources */,
+				0A11CA7E0000000000000B01 /* ShortcutProfile.swift in Sources */,
+				0A11CA7E0000000000000B02 /* ShortcutProfileManager.swift in Sources */,
+				0A11CA7E0000000000000B03 /* ShortcutHubComponents.swift in Sources */,
+				0A11CA7E0000000000000B04 /* NumpadGridView.swift in Sources */,
+				0A11CA7E0000000000000B05 /* ShortcutEditorSheet.swift in Sources */,
+				0A11CA7E0000000000000B06 /* ShortcutHubView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -808,7 +888,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "openterface.kvm.ipados";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
-				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = 2;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -850,7 +930,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "openterface.kvm.ipados";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = NO;
-				SUPPORTED_PLATFORMS = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = 2;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;

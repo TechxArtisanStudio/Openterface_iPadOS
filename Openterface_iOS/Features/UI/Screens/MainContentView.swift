@@ -140,12 +140,17 @@ struct MainContentView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $appCoordinator.showShortcutHub) {
+            ShortcutHubView(keyboardManager: appCoordinator.keyboardManager, appCoordinator: appCoordinator)
+                .presentationDetents([.medium, .large])
+        }
         .overlay {
             // Floating Virtual Keyboard
             if appCoordinator.showFloatingKeyboard {
                 FloatingKeyboardView(
                     isPresented: $appCoordinator.showFloatingKeyboard,
-                    keyboardManager: appCoordinator.keyboardManager
+                    keyboardManager: appCoordinator.keyboardManager,
+                    appCoordinator: appCoordinator
                 )
                 .animation(.spring(response: 0.3), value: appCoordinator.showFloatingKeyboard)
             }

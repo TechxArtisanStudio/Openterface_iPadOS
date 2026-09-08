@@ -54,7 +54,11 @@ final class VideoManager: NSObject, ObservableObject, CameraManagementProtocol, 
 
     // Simulator detection and mock
     private var isRunningOnSimulator: Bool {
-        return TARGET_OS_SIMULATOR != 0
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return false
+        #endif
     }
     
     #if targetEnvironment(simulator)
@@ -282,7 +286,17 @@ extension VideoManager {
         }
 
         let wasAuthorized = self.isAuthorized
-        let shouldBeAuthorized = (status == .authorized)
+        let shouldBeAuthorized: Bool
+
+        // On simulator, respect the simulator-specific authorization we set during init
+        if isRunningOnSimulator {
+            // If we're on simulator and we've already set isAuthorized to true during init (for mock camera),
+            // keep it true regardless of the actual authorization status
+            shouldBeAuthorized = self.isAuthorized || (status == .authorized)
+        } else {
+            // On real device, use the actual authorization status
+            shouldBeAuthorized = (status == .authorized)
+        }
 
         // Update immediately if on main queue, otherwise dispatch to main queue
         if Thread.isMainThread {
@@ -532,6 +546,30 @@ extension VideoManager {
 // MARK: - Private Methods
 private extension VideoManager {
     func setupCamera() {
+        // On simulator, use mock camera instead of trying to discover real cameras
+        if isRunningOnSimulator {
+            print("📱 [Simulator] Using mock camera - no real camera discovery")
+            // Initialize simulator mock if needed
+            #if targetEnvironment(simulator)
+            if simulatorPreviewLayer == nil {
+                if simulatorMock == nil {
+                    simulatorMock = SimulatorCameraMock()
+                }
+                if let mockLayer = simulatorMock?.getPreviewLayer() {
+                    simulatorPreviewLayer = mockLayer
+                    print("✅ [Simulator] Created simulator mock preview layer")
+                    simulatorMock?.startMockCamera { sampleBuffer in
+                        print("📹 [Simulator] Received frame from mock camera")
+                    }
+                }
+            }
+            #endif
+            // Mark session as running since we have a mock camera
+            sessionState = .running
+            return
+        }
+
+        // On real device, discover and select actual cameras
         discovereAndSelectCamera()
     }
 

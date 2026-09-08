@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import UIKit
 
 final class CameraSessionManager: NSObject, ObservableObject {
     // MARK: - Sub-managers
@@ -79,7 +80,11 @@ final class CameraSessionManager: NSObject, ObservableObject {
     
     /// Check if running in simulator mode
     var isSimulatorMode: Bool {
-        return TARGET_OS_SIMULATOR != 0
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return false
+        #endif
     }
     
     /// Capture screenshot from simulator mock camera

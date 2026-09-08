@@ -138,6 +138,16 @@ struct ControlsView: View {
                     }
                 )
 
+                // 6.6. Shortcut Hub Button
+                ControlButton(
+                    icon: "bolt.fill",
+                    label: "Shortcuts",
+                    action: {
+                        appCoordinator.showShortcutHub.toggle()
+                    },
+                    isActive: appCoordinator.showShortcutHub
+                )
+
                 // 6.6. AI Chat Button (only shown when AI integration is enabled)
                 if isAIEnabled {
                     ControlButton(
@@ -334,8 +344,6 @@ struct TargetOSButton: View {
         case .macOS: return "Mac"
         case .windows: return "Win"
         case .linux: return "Linux"
-        case .iOS: return "iOS"
-        case .android: return "Android"
         }
     }
 
@@ -344,8 +352,6 @@ struct TargetOSButton: View {
         case .macOS: return "applelogo"
         case .windows: return "pc"
         case .linux: return "terminal"
-        case .iOS: return "iphone"
-        case .android: return "phone.fill"
         }
     }
 

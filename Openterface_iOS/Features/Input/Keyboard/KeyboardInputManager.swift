@@ -68,16 +68,23 @@ final class KeyboardInputManager: ObservableObject {
         
         // Modifier keys
         "Ctrl": 0xE0, "Shift": 0xE1, "Alt": 0xE2, "Cmd": 0xE3,
-        
+
+        // Target-OS-specific modifier aliases (all map to the same HID codes)
+        "Win": 0xE3,    // Windows key (same HID code as Mac Cmd / GUI)
+        "Super": 0xE3,  // Linux Super key (same HID code as Mac Cmd / GUI)
+        "App": 0x65,    // Application / Menu key (Windows/Linux only)
+
         // Aliases
         "Esc": 0x29, "Del": 0x4C
     ]
-    
+
     private let modifierMasks: [String: UInt8] = [
         "Ctrl": 0x01,   // Left Control
         "Shift": 0x02,  // Left Shift
         "Alt": 0x04,    // Left Alt
-        "Cmd": 0x08     // Left GUI (Command)
+        "Cmd": 0x08,    // Left GUI (Command on Mac)
+        "Win": 0x08,    // Left GUI (Windows key on Windows)
+        "Super": 0x08   // Left GUI (Super key on Linux)
     ]
     
     // MARK: - Initialization
@@ -348,7 +355,7 @@ extension KeyboardInputManager {
     func getCurrentModeDescription() -> String {
         return currentMode.description
     }
-    
+
     func handleSpecialKey(_ key: String) {
         switch key {
         case "Esc":
@@ -357,6 +364,57 @@ extension KeyboardInputManager {
             handleKeyPress("Caps")
         default:
             handleKeyPress(key)
+        }
+    }
+}
+
+// MARK: - Shortcut Press/Release (real key semantics)
+// Shortcut buttons behave like actual keyboard keys: the press half is sent when the
+// finger touches down and the release half when it lifts — the target can keep the key
+// held (repeat) while the button is held. `handleChordRelease()` is a plain empty
+// report, exactly what `handleKeyCombo` sends as its delayed release.
+extension KeyboardInputManager {
+    /// 组合键按下(只发按下,不发释放)。由按钮的 touch-down 触发。
+    /// - Parameters:
+    ///   - modifiers: 修饰符名,如 ["Ctrl"] / ["Cmd", "Shift"]
+    ///   - key: 主键,如 "C" / "Up"
+    func handleChordPress(modifiers: [String], key: String) {
+        print("🔗 Chord press: \(modifiers.joined(separator: "+"))+\(key)")
+
+        guard let keyCode = keyboardCodes[key] else {
+            print("❌ Unknown chord key: \(key)")
+            return
+        }
+
+        var modifierByte: UInt8 = 0x00
+        for modifier in modifiers {
+            if let modifierMask = modifierMasks[modifier] {
+                modifierByte |= modifierMask
+            }
+        }
+
+        var keyCodes: [UInt8] = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+        keyCodes[0] = keyCode
+        sendKeyboardData(modifier: modifierByte, keyCodes: keyCodes)
+    }
+
+    /// 组合键释放(发送空状态)。由按钮的 touch-up 触发。
+    func handleChordRelease() {
+        print("🔗 Chord release")
+        sendKeyboardData(modifier: 0x00, keyCodes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+    }
+
+    /// 一次性点按触发(用于没有「按住」语义的入口,如 ShortcutHub 卡片):按下后短暂延时
+    /// 自动抬起,避免只有按下、目标端卡键。修饰键 / Caps 项保持 toggle 开关语义,不自动抬起。
+    func handleTapKey(_ key: String) {
+        // 与 handleKeyPress 内部一致:修饰键与 Caps 走 toggle
+        if modifierMasks.keys.contains(key) || key == "Caps" {
+            handleKeyPress(key)
+            return
+        }
+        handleKeyPress(key)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.handleKeyRelease(key)
         }
     }
 }
